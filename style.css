@@ -1,0 +1,125 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(#6ec6ff, #dff7ff);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.game-wrapper {
+    width: 95%;
+    max-width: 900px;
+    text-align: center;
+}
+
+h1 {
+    color: #222;
+    margin: 10px 0;
+}
+
+.info {
+    background: white;
+    padding: 12px;
+    border-radius: 15px;
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 10px;
+    font-size: 18px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+#gameCanvas {
+    width: 100%;
+    max-width: 900px;
+    height: 500px;
+    display: block;
+    background: #7ed6ff;
+    border: 5px solid #222;
+    border-radius: 15px;
+    margin: auto;
+    image-rendering: pixelated;
+}
+
+.message {
+    margin: 12px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+#startBtn {
+    border: none;
+    background: #ff4757;
+    color: white;
+    padding: 13px 30px;
+    font-size: 18px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#startBtn:hover {
+    transform: scale(1.05);
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.controls button {
+    width: 90px;
+    height: 60px;
+    border: none;
+    border-radius: 15px;
+    background: white;
+    font-size: 22px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    touch-action: manipulation;
+}
+
+.controls button:active {
+    transform: scale(0.92);
+}
+
+.help {
+    color: #333;
+    font-size: 14px;
+}
+
+@media (max-width: 600px) {
+
+    body {
+        align-items: flex-start;
+        padding-top: 10px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    .info {
+        font-size: 14px;
+    }
+
+    #gameCanvas {
+        height: 400px;
+    }
+
+    .controls button {
+        width: 80px;
+        height: 55px;
+    }
+
+    .help {
+        display: none;
+    }
+}
