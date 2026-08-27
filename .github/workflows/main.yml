@@ -1,0 +1,35 @@
+name: انتشار بازی
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: دریافت فایل‌های پروژه
+        uses: actions/checkout@v4
+
+      - name: تنظیم صفحات گیت‌هاب
+        uses: actions/configure-pages@v5
+
+      - name: بارگذاری فایل‌های سایت
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: انتشار سایت
+        id: deployment
+        uses: actions/deploy-pages@v4
