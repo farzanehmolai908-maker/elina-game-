@@ -1,82 +1,48 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>قازچ‌خور 🪿</title>
-
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ماجراجویی الینا 🎮</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <div id="game">
+    <div class="game-wrapper">
 
-    <!-- صفحه شروع -->
-    <div id="start-screen" class="screen">
-      <h1>🪿 قازچ‌خور</h1>
+        <h1>🌟 ماجراجویی الینا</h1>
 
-      <p>
-        آماده‌ای قازچ‌ها رو بخوری؟!
-      </p>
-
-      <button id="start-btn">
-        شروع بازی 🎮
-      </button>
-    </div>
-
-
-    <!-- صفحه بازی -->
-    <div id="game-screen" class="screen hidden">
-
-      <div class="top-bar">
-
-        <div class="score-box">
-          امتیاز:
-          <span id="score">0</span>
+        <div class="info">
+            <span>⭐ امتیاز: <b id="score">0</b></span>
+            <span>🪙 سکه: <b id="coins">0</b></span>
+            <span>🔫 تیر: <b id="ammo">20</b></span>
+            <span>🛡️ سپر: <b id="shield">3</b></span>
+            <span>❤️ جان: <b id="lives">5</b></span>
         </div>
 
-        <div class="time-box">
-          زمان:
-          <span id="time">60</span>
+        <canvas id="gameCanvas"></canvas>
+
+        <div class="message" id="message">
+            برای شروع بازی روی دکمه بزن!
         </div>
 
-      </div>
+        <button id="startBtn">🎮 شروع بازی</button>
 
-
-      <!-- زمین بازی -->
-      <div id="game-area">
-
-        <div id="player">
-          🧑‍🌾
+        <div class="controls">
+            <button id="leftBtn">⬅️</button>
+            <button id="rightBtn">➡️</button>
+            <button id="shootBtn">🔫 تیر</button>
+            <button id="jumpBtn">⬆️ پرش</button>
         </div>
 
-      </div>
+        <p class="help">
+            کامپیوتر: ← → حرکت | Space پرش | Z تیر
+        </p>
 
     </div>
 
-
-    <!-- صفحه پایان -->
-    <div id="game-over" class="screen hidden">
-
-      <h2>🎉 بازی تمام شد!</h2>
-
-      <p>
-        امتیاز شما:
-        <strong id="final-score">0</strong>
-      </p>
-
-      <button id="restart-btn">
-        دوباره بازی کن 🔄
-      </button>
-
-    </div>
-
-  </div>
-
-
-  <script src="game.js"></script>
+    <script src="game.js"></script>
 
 </body>
 </html>
