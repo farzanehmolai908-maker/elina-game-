@@ -1,161 +1,425 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>ماجراجویی الینا</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    >
+
+    <title>ماجراجویی الینا</title>
+
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<main id="gameWrap">
+<!-- =========================
+     Canvas اصلی بازی
+========================= -->
 
-  <canvas id="game"></canvas>
+<canvas id="game"></canvas>
 
-  <!-- اطلاعات بازی -->
-  <div id="hud">
-    <div class="hudBox">❤️ <span id="lives">3</span></div>
-    <div class="hudBox">🪙 <span id="coins">0</span></div>
-    <div class="hudBox">💎 <span id="gems">0</span></div>
-    <div class="hudBox">🔫 <span id="ammo">7</span></div>
-    <div class="hudBox">🌍 <span id="stage">1-1</span></div>
-  </div>
 
-  <div id="message"></div>
+<!-- =========================
+     صفحه شروع
+========================= -->
 
-  <!-- منوی اصلی -->
-  <section id="menu" class="screen">
+<section id="menu" class="screen">
 
-    <h1>🌟 ماجراجویی الینا 🌟</h1>
+    <h1>🎮 ماجراجویی الینا</h1>
 
     <p>
-      برای نجات پدر، ۴ دنیا و ۴۰ مرحله را پشت سر بگذار!
+        الینا برای نجات پدرش باید از چهار دنیای خطرناک عبور کند،
+        سکه جمع کند، با دشمن‌ها مبارزه کند و به قفس پدرش برسد.
     </p>
 
     <button id="startBtn">
-      شروع بازی
+        ▶️ شروع بازی
     </button>
 
     <button id="levelsBtn">
-      🗺️ انتخاب مرحله
+        🗺️ مراحل
     </button>
 
-    <button id="charsBtn">
-      👧 شخصیت‌ها 💎
+    <button id="charactersBtn">
+        👧 شخصیت‌ها
     </button>
 
-  </section>
+</section>
 
-  <!-- نقشه مراحل -->
-  <section id="levels" class="screen hidden">
+
+<!-- =========================
+     انتخاب مراحل
+========================= -->
+
+<section id="levels" class="screen hidden">
 
     <h2>🗺️ نقشه مراحل</h2>
 
-    <div id="worldTabs"></div>
+    <p>
+        هر مرحله را کامل کن تا مرحله بعدی باز شود.
+    </p>
+
+    <div id="worldTabs">
+
+        <button class="tab" data-world="0">
+            🌲 جنگل
+        </button>
+
+        <button class="tab" data-world="1">
+            ❄️ برف
+        </button>
+
+        <button class="tab" data-world="2">
+            🌊 آب
+        </button>
+
+        <button class="tab" data-world="3">
+            🔥 آتش
+        </button>
+
+    </div>
 
     <div id="levelGrid"></div>
 
-    <button class="backBtn">
-      بازگشت
+    <button id="levelsBackBtn">
+        ↩️ بازگشت
     </button>
 
-  </section>
+</section>
 
-  <!-- شخصیت‌ها -->
-  <section id="characters" class="screen hidden">
 
-    <h2>👧 شخصیت‌ها</h2>
+<!-- =========================
+     انتخاب شخصیت
+========================= -->
+
+<section id="characters" class="screen hidden">
+
+    <h2>👧 انتخاب شخصیت</h2>
 
     <p>
-      هر ۶۰ سکه = ۱ 💎 الماس
+        با جمع کردن سکه می‌توانی الماس به دست بیاوری
+        و شخصیت‌های جدید را باز کنی.
     </p>
 
-    <div id="characterGrid"></div>
+    <div id="characterGrid">
 
-    <button class="backBtn">
-      بازگشت
-    </button>
+        <div class="charCard">
 
-  </section>
+            <div class="charIcon">
+                👧
+            </div>
 
-  <!-- پایان مرحله -->
-  <section id="finish" class="screen hidden">
+            <b>الینا</b>
 
-    <h2>🏆 مرحله کامل شد!</h2>
+            <small>
+                شخصیت اصلی
+            </small>
 
-    <div class="stars">
-      ★ ★ ★
+            <button
+                class="characterSelect"
+                data-character="0"
+            >
+                انتخاب
+            </button>
+
+        </div>
+
+        <div class="charCard">
+
+            <div class="charIcon">
+                🧝‍♀️
+            </div>
+
+            <b>جنگل‌بان</b>
+
+            <small>
+                💎 2 الماس
+            </small>
+
+            <button
+                class="characterSelect"
+                data-character="1"
+            >
+                🔒 خرید
+            </button>
+
+        </div>
+
+        <div class="charCard">
+
+            <div class="charIcon">
+                🧙‍♀️
+            </div>
+
+            <b>جادوگر</b>
+
+            <small>
+                💎 4 الماس
+            </small>
+
+            <button
+                class="characterSelect"
+                data-character="2"
+            >
+                🔒 خرید
+            </button>
+
+        </div>
+
+        <div class="charCard">
+
+            <div class="charIcon">
+                🥷
+            </div>
+
+            <b>قهرمان</b>
+
+            <small>
+                💎 6 الماس
+            </small>
+
+            <button
+                class="characterSelect"
+                data-character="3"
+            >
+                🔒 خرید
+            </button>
+
+        </div>
+
     </div>
 
-    <p id="finishStats"></p>
-
-    <button id="nextBtn">
-      مرحله بعد ➜
+    <button id="charactersBackBtn">
+        ↩️ بازگشت
     </button>
 
-    <button id="mapBtn">
-      🗺️ نقشه مراحل
-    </button>
+</section>
 
-  </section>
 
-  <!-- مرحله گنج -->
-  <section id="treasure" class="screen hidden">
+<!-- =========================
+     HUD بازی
+========================= -->
 
-    <h2>💰 مرحله گنج!</h2>
+<div id="hud" class="hidden">
+
+    <div class="hudBox">
+        ❤️ <span id="health">3</span>
+    </div>
+
+    <div class="hudBox">
+        🛡️ <span id="shield">0</span>
+    </div>
+
+    <div class="hudBox">
+        🪙 <span id="coins">0</span>
+    </div>
+
+    <div class="hudBox">
+        💎 <span id="diamonds">0</span>
+    </div>
+
+    <div class="hudBox">
+        🔫 <span id="ammo">7</span>
+    </div>
+
+    <div class="hudBox">
+        مرحله <span id="currentLevel">1</span>
+    </div>
+
+</div>
+
+
+<!-- =========================
+     پیام بازی
+========================= -->
+
+<div id="message"></div>
+
+
+<!-- =========================
+     کنترل‌های داخل صفحه
+========================= -->
+
+<div id="controls" class="hidden">
+
+    <!-- حرکت -->
+
+    <div id="movementControls">
+
+        <button
+            id="left"
+            class="gameButton"
+            aria-label="حرکت به چپ"
+        >
+            ◀️
+        </button>
+
+        <button
+            id="right"
+            class="gameButton"
+            aria-label="حرکت به راست"
+        >
+            ▶️
+        </button>
+
+    </div>
+
+
+    <!-- پرش و تیر -->
+
+    <div id="actionControls">
+
+        <button
+            id="shoot"
+            class="gameButton"
+            aria-label="تیراندازی"
+        >
+            🔫
+        </button>
+
+        <button
+            id="jump"
+            class="gameButton"
+            aria-label="پرش"
+        >
+            ⬆️
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     صفحه پایان مرحله
+========================= -->
+
+<section id="finish" class="screen hidden">
+
+    <h2>🎉 مرحله تمام شد!</h2>
 
     <p>
-      همه گنج‌ها را جمع کن!
+        آفرین! پرچم را پیدا کردی و مرحله را با موفقیت پشت سر گذاشتی.
     </p>
 
-    <button id="treasureBtn">
-      شروع مرحله گنج
+    <div id="finishStats">
+
+        🪙 سکه‌ها:
+        <span id="finishCoins">0</span>
+
+        <br>
+
+        💎 الماس:
+        <span id="finishDiamonds">0</span>
+
+    </div>
+
+    <button id="nextLevelBtn">
+        ➡️ مرحله بعد
     </button>
 
-  </section>
+    <button id="finishLevelsBtn">
+        🗺️ نقشه مراحل
+    </button>
 
-  <!-- باخت -->
-  <section id="gameover" class="screen hidden">
+</section>
 
-    <h2>🔥 بازی تمام شد!</h2>
+
+<!-- =========================
+     مرحله گنج
+========================= -->
+
+<section id="treasure" class="screen hidden">
+
+    <h2>💰 مرحله گنج</h2>
 
     <p>
-      نگران نباش؛ دوباره امتحان کن.
+        گنج‌ها را جمع کن و سکه‌های بیشتری به دست بیاور!
+    </p>
+
+    <div id="treasureStats">
+        🪙 سکه:
+        <span id="treasureCoins">0</span>
+    </div>
+
+    <button id="treasureStartBtn">
+        💰 شروع مرحله گنج
+    </button>
+
+    <button id="treasureContinueBtn">
+        ➡️ ادامه
+    </button>
+
+</section>
+
+
+<!-- =========================
+     صفحه باخت
+========================= -->
+
+<section id="gameover" class="screen hidden">
+
+    <h2>💔 بازی تمام شد</h2>
+
+    <p>
+        الینا هنوز نتوانسته پدرش را نجات دهد!
+        دوباره تلاش کن.
     </p>
 
     <button id="retryBtn">
-      🔄 تلاش دوباره
+        🔄 تلاش دوباره
     </button>
 
-    <button id="gameMapBtn">
-      🗺️ نقشه مراحل
+    <button id="gameoverLevelsBtn">
+        🗺️ انتخاب مرحله
     </button>
 
-  </section>
-
-  <!-- دکمه‌های داخل صفحه -->
-  <div id="controls">
-
-    <button id="left">
-      ◀
+    <button id="gameoverMenuBtn">
+        🏠 منوی اصلی
     </button>
 
-    <button id="right">
-      ▶
+</section>
+
+
+<!-- =========================
+     پایان داستان
+========================= -->
+
+<section id="storyEnd" class="screen hidden">
+
+    <h1>🏆 پایان ماجراجویی</h1>
+
+    <div style="font-size:100px;">
+        👧 🔓 👨‍👧
+    </div>
+
+    <h2>
+        پدر الینا آزاد شد!
+    </h2>
+
+    <p>
+        بعد از عبور از چهار دنیای خطرناک،
+        شکست دادن هیولاها و پشت سر گذاشتن تمام مراحل،
+        الینا سرانجام به قفس پدرش رسید و او را آزاد کرد.
+    </p>
+
+    <p>
+        ❤️ ممنون که تا پایان همراه الینا بودی!
+    </p>
+
+    <button id="storyMenuBtn">
+        🏠 بازگشت به منو
     </button>
 
-    <button id="shoot">
-      🔫
-    </button>
+</section>
 
-    <button id="jump">
-      ▲
-    </button>
 
-  </div>
-
-</main>
+<!-- =========================
+     JavaScript
+========================= -->
 
 <script src="game.js"></script>
 
