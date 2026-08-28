@@ -1,13 +1,13 @@
 // ======================================================
-// ELINA GAME
-// 4 دنیا × 10 مرحله
+// 🎮 ماجراجویی الینا
+// game.js
 // ======================================================
 
-const canvas = document.getElementById("gameCanvas");
+const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-const W = 900;
-const H = 500;
+let W = window.innerWidth;
+let H = window.innerHeight;
 
 canvas.width = W;
 canvas.height = H;
@@ -18,33 +18,22 @@ canvas.height = H;
 
 let gameRunning = false;
 
-let world = 1;
+let world = 0;
 let level = 1;
 
-let score = 0;
-let coins = 0;
-let lives = 5;
-let ammo = 30;
-let shield = 3;
-
 let camera = 0;
-let levelWidth = 3000;
 
-let platforms = [];
-let enemies = [];
-let coinItems = [];
-let ammoItems = [];
-let heartItems = [];
-let bullets = [];
-let particles = [];
+let coins = 0;
+let diamonds = 0;
+let health = 3;
+let shield = 0;
+let ammo = 7;
 
-let flag = null;
-let boss = null;
+let maxHealth = 3;
 
-let endingScene = false;
-let endingTimer = 0;
+let unlockedLevel = 1;
 
-const keys = {
+let keys = {
     left: false,
     right: false
 };
@@ -53,39 +42,36 @@ const keys = {
 // دنیاها
 // ======================================================
 
-const worlds = {
-    1: {
-        name: "🌲 جنگل اسرارآمیز",
-        sky: "#70c86a",
-        ground: "#70452b",
-        top: "#3d9b4c",
-        enemies: ["snail", "turtle", "cabbage"]
+const worlds = [
+    {
+        name: "جنگل",
+        sky: "#7ed6ff",
+        ground: "#6b4328",
+        top: "#3e9b45",
+        enemy: ["snail", "turtle", "cabbage"]
     },
-
-    2: {
-        name: "❄️ سرزمین برفی",
-        sky: "#9edfff",
-        ground: "#aabdc5",
+    {
+        name: "برفی",
+        sky: "#bdeaff",
+        ground: "#d8edf5",
         top: "#ffffff",
-        enemies: ["penguin", "sheep", "snowball"]
+        enemy: ["penguin", "sheep", "snowball"]
     },
-
-    3: {
-        name: "🌊 دنیای زیر آب",
-        sky: "#168fc7",
-        ground: "#07516c",
-        top: "#35c8df",
-        enemies: ["fish", "bubble"]
+    {
+        name: "آبی",
+        sky: "#1676b8",
+        ground: "#12527d",
+        top: "#37bde8",
+        enemy: ["fish", "bubble"]
     },
-
-    4: {
-        name: "🔥 سرزمین آتش",
-        sky: "#e96b43",
-        ground: "#482020",
-        top: "#a83a26",
-        enemies: ["fire", "lava", "monster"]
+    {
+        name: "آتشی",
+        sky: "#6b1710",
+        ground: "#3b1712",
+        top: "#ff6a00",
+        enemy: ["fire", "lava"]
     }
-};
+];
 
 // ======================================================
 // بازیکن
@@ -94,414 +80,301 @@ const worlds = {
 const player = {
     x: 100,
     y: 300,
+
     w: 38,
-    h: 58,
+    h: 70,
 
     vx: 0,
     vy: 0,
 
-    speed: 5,
-    jumpPower: 13,
+    speed: 4.5,
+    jump: 12,
 
-    ground: false,
-    direction: 1,
+    grounded: false,
 
-    invincible: 0,
-    shootCooldown: 0
+    invincible: 0
 };
 
 // ======================================================
-// شروع بازی
+// مرحله
 // ======================================================
 
-const startBtn = document.getElementById("startBtn");
+let levelWidth = 4200;
 
-if (startBtn) {
-    startBtn.addEventListener("click", startGame);
-}
+let platforms = [];
+let coinItems = [];
+let ammoItems = [];
+let heartItems = [];
+let enemies = [];
+let bullets = [];
 
-function startGame() {
+let flag = {
+    x: levelWidth - 180,
+    y: 300,
+    w: 25,
+    h: 120
+};
 
-    world = 1;
-    level = 1;
-
-    score = 0;
-    coins = 0;
-    lives = 5;
-    ammo = 30;
-    shield = 3;
-
-    endingScene = false;
-    endingTimer = 0;
-
-    gameRunning = true;
-
-    loadLevel();
-
-    showMessage("🌟 مأموریت نجات پدر شروع شد!");
-
-    requestAnimationFrame(loop);
-}
+let boss = null;
 
 // ======================================================
 // ساخت مرحله
 // ======================================================
 
-function loadLevel() {
+function createLevel() {
 
     platforms = [];
-    enemies = [];
     coinItems = [];
     ammoItems = [];
     heartItems = [];
+    enemies = [];
     bullets = [];
-    particles = [];
 
     boss = null;
-    flag = null;
 
     camera = 0;
-
-    // طول مراحل کمی متفاوت است
-    levelWidth = 2400 + level * 120;
-
-    createMainGround();
-    createPlatforms();
-    createCoins();
-    createAmmo();
-    createHearts();
-    createEnemies();
-
-    // مرحله دهم = باس
-    if (level === 10) {
-        createBoss();
-    }
-
-    flag = {
-        x: levelWidth - 110,
-        y: 350,
-        active: level !== 10
-    };
-
-    resetPlayer();
-    updateUI();
-}
-
-// ======================================================
-// زمین
-// ======================================================
-
-function createMainGround() {
-
-    platforms.push({
-        x: 0,
-        y: 450,
-        w: levelWidth,
-        h: 50
-    });
-}
-
-// ======================================================
-// سکوهای متفاوت
-// ======================================================
-
-function createPlatforms() {
-
-    const pattern = level % 6;
-
-    if (pattern === 0) {
-
-        // پرش‌های بلند
-        for (let i = 0; i < 15; i++) {
-
-            platforms.push({
-                x: 230 + i * 175,
-                y: i % 2 === 0 ? 260 : 150,
-                w: 105,
-                h: 20
-            });
-        }
-    }
-
-    else if (pattern === 1) {
-
-        // مسیر جنگلی
-        for (let i = 0; i < 20; i++) {
-
-            platforms.push({
-                x: 160 + i * 125,
-                y: 310 - (i % 3) * 45,
-                w: 95,
-                h: 20
-            });
-        }
-    }
-
-    else if (pattern === 2) {
-
-        // پله
-        for (let i = 0; i < 18; i++) {
-
-            platforms.push({
-                x: 150 + i * 125,
-                y: 420 - (i % 5) * 55,
-                w: 100,
-                h: 20
-            });
-        }
-    }
-
-    else if (pattern === 3) {
-
-        // سکوهای بلند
-        for (let i = 0; i < 16; i++) {
-
-            platforms.push({
-                x: 220 + i * 155,
-                y: 170 + Math.sin(i) * 100,
-                w: 110,
-                h: 20
-            });
-        }
-    }
-
-    else if (pattern === 4) {
-
-        // مسیر پراکنده
-        for (let i = 0; i < 18; i++) {
-
-            platforms.push({
-                x: 180 + i * 140,
-                y: 180 + ((i * 73) % 190),
-                w: 90,
-                h: 20
-            });
-        }
-    }
-
-    else {
-
-        // پرش‌های خیلی متنوع
-        for (let i = 0; i < 17; i++) {
-
-            platforms.push({
-                x: 190 + i * 155,
-                y: 220 + Math.cos(i) * 120,
-                w: 105,
-                h: 20
-            });
-        }
-    }
-}
-
-// ======================================================
-// سکه
-// ======================================================
-
-function createCoins() {
-
-    for (let i = 0; i < 38; i++) {
-
-        coinItems.push({
-            x: 170 + i * 68,
-            y: 190 + Math.sin(i * 0.8) * 100,
-            collected: false
-        });
-    }
-}
-
-// ======================================================
-// جعبه جادویی
-// ======================================================
-
-function createAmmo() {
-
-    for (let i = 0; i < 10; i++) {
-
-        ammoItems.push({
-            x: 380 + i * 230,
-            y: 400,
-            collected: false
-        });
-    }
-}
-
-// ======================================================
-// قلب
-// ======================================================
-
-function createHearts() {
-
-    for (let i = 0; i < 5; i++) {
-
-        heartItems.push({
-            x: 550 + i * 430,
-            y: 210 + (i % 2) * 70,
-            collected: false
-        });
-    }
-}
-
-// ======================================================
-// دشمن
-// ======================================================
-
-function createEnemies() {
-
-    const types = worlds[world].enemies;
-
-    for (let i = 0; i < 16; i++) {
-
-        enemies.push({
-
-            x: 430 + i * 145,
-
-            y: 405,
-
-            w: 44,
-            h: 44,
-
-            type: types[i % types.length],
-
-            alive: true,
-
-            direction: i % 2 === 0 ? 1 : -1,
-
-            speed: 0.5 + Math.random() * 0.6
-        });
-    }
-}
-
-// ======================================================
-// باس
-// ======================================================
-
-function createBoss() {
-
-    boss = {
-
-        x: levelWidth - 500,
-        y: 280,
-
-        w: 150,
-        h: 150,
-
-        hp: 15,
-        maxHp: 15,
-
-        direction: -1,
-        speed: 0.7
-    };
-}
-
-// ======================================================
-// ریست بازیکن
-// ======================================================
-
-function resetPlayer() {
 
     player.x = 100;
     player.y = 300;
-
     player.vx = 0;
     player.vy = 0;
 
-    player.direction = 1;
+    levelWidth = 4200 + (level - 1) * 250;
 
-    player.ground = false;
+    // زمین اصلی
+    platforms.push({
+        x: 0,
+        y: H - 80,
+        w: levelWidth,
+        h: 80
+    });
 
-    player.invincible = 0;
+    // سکوهای مختلف
+    for (let i = 0; i < 22; i++) {
 
-    camera = 0;
+        let x = 300 + i * 175;
+
+        let heightVariation =
+            Math.sin(i * 1.7) * 100;
+
+        let y =
+            H - 180 -
+            heightVariation;
+
+        if (y < 170) y = 170;
+
+        platforms.push({
+            x: x,
+            y: y,
+            w: 110 + (i % 3) * 30,
+            h: 25
+        });
+
+        // سکه
+        coinItems.push({
+            x: x + 45,
+            y: y - 35,
+            collected: false
+        });
+
+        // بعضی سکوها قلب دارند
+        if (i % 6 === 0) {
+
+            heartItems.push({
+                x: x + 35,
+                y: y - 85,
+                collected: false
+            });
+        }
+
+        // مهمات
+        if (i % 7 === 0) {
+
+            ammoItems.push({
+                x: x + 70,
+                y: y - 70,
+                collected: false
+            });
+        }
+
+        // دشمن
+        if (i > 1) {
+
+            enemies.push({
+                x: x + 20,
+                y: y - 50,
+
+                w: 45,
+                h: 45,
+
+                vx:
+                    i % 2 === 0
+                        ? 1
+                        : -1,
+
+                type:
+                    worlds[world].enemy[
+                        i %
+                        worlds[world].enemy.length
+                    ],
+
+                alive: true,
+
+                minX: x,
+                maxX: x + 90
+            });
+        }
+    }
+
+    // پرش‌های بلند در مراحل بالاتر
+    if (level >= 5) {
+
+        for (let i = 0; i < 5; i++) {
+
+            platforms.push({
+                x: 700 + i * 600,
+                y: 230 - (i % 2) * 70,
+                w: 130,
+                h: 25
+            });
+        }
+    }
+
+    // باس در مرحله 10 هر دنیا
+    if (level === 10) {
+
+        boss = {
+            x: levelWidth - 600,
+            y: H - 300,
+
+            w: 150,
+            h: 150,
+
+            health: 15,
+
+            vx: 1.5,
+
+            alive: true
+        };
+    }
+
+    flag.x = levelWidth - 180;
+    flag.y = H - 200;
 }
 
 // ======================================================
-// کیبورد
+// تغییر اندازه
 // ======================================================
 
-document.addEventListener("keydown", function(e) {
+window.addEventListener("resize", () => {
 
-    if (e.key === "ArrowLeft") {
+    W = window.innerWidth;
+    H = window.innerHeight;
+
+    canvas.width = W;
+    canvas.height = H;
+});
+
+// ======================================================
+// کنترل کیبورد
+// ======================================================
+
+document.addEventListener("keydown", e => {
+
+    if (e.key === "ArrowLeft" || e.key === "a") {
         keys.left = true;
     }
 
-    if (e.key === "ArrowRight") {
+    if (e.key === "ArrowRight" || e.key === "d") {
         keys.right = true;
     }
 
     if (
         e.key === "ArrowUp" ||
-        e.code === "Space"
+        e.key === "w" ||
+        e.key === " "
     ) {
-
         jump();
-        e.preventDefault();
     }
 
-    if (e.key.toLowerCase() === "z") {
+    if (e.key === "f") {
         shoot();
     }
 });
 
-document.addEventListener("keyup", function(e) {
+document.addEventListener("keyup", e => {
 
-    if (e.key === "ArrowLeft") {
+    if (e.key === "ArrowLeft" || e.key === "a") {
         keys.left = false;
     }
 
-    if (e.key === "ArrowRight") {
+    if (e.key === "ArrowRight" || e.key === "d") {
         keys.right = false;
     }
 });
 
 // ======================================================
-// کنترل موبایل
+// کنترل لمسی
 // ======================================================
 
-const leftBtn = document.getElementById("leftBtn");
-const rightBtn = document.getElementById("rightBtn");
-const jumpBtn = document.getElementById("jumpBtn");
-const shootBtn = document.getElementById("shootBtn");
+function holdButton(id, property) {
 
-if (leftBtn) {
-    buttonControl(
-        leftBtn,
-        () => keys.left = true,
-        () => keys.left = false
+    const button = document.getElementById(id);
+
+    if (!button) return;
+
+    button.addEventListener("pointerdown", e => {
+
+        e.preventDefault();
+
+        keys[property] = true;
+    });
+
+    button.addEventListener("pointerup", e => {
+
+        e.preventDefault();
+
+        keys[property] = false;
+    });
+
+    button.addEventListener("pointercancel", () => {
+        keys[property] = false;
+    });
+
+    button.addEventListener("pointerleave", () => {
+        keys[property] = false;
+    });
+}
+
+holdButton("left", "left");
+holdButton("right", "right");
+
+const jumpButton =
+    document.getElementById("jump");
+
+if (jumpButton) {
+
+    jumpButton.addEventListener(
+        "pointerdown",
+        e => {
+            e.preventDefault();
+            jump();
+        }
     );
 }
 
-if (rightBtn) {
-    buttonControl(
-        rightBtn,
-        () => keys.right = true,
-        () => keys.right = false
+const shootButton =
+    document.getElementById("shoot");
+
+if (shootButton) {
+
+    shootButton.addEventListener(
+        "pointerdown",
+        e => {
+            e.preventDefault();
+            shoot();
+        }
     );
-}
-
-if (jumpBtn) {
-    jumpBtn.addEventListener("click", jump);
-}
-
-if (shootBtn) {
-    shootBtn.addEventListener("click", shoot);
-}
-
-function buttonControl(button, start, end) {
-
-    button.addEventListener("touchstart", function(e) {
-        e.preventDefault();
-        start();
-    });
-
-    button.addEventListener("touchend", function(e) {
-        e.preventDefault();
-        end();
-    });
-
-    button.addEventListener("mousedown", start);
-    button.addEventListener("mouseup", end);
-    button.addEventListener("mouseleave", end);
 }
 
 // ======================================================
@@ -512,16 +385,16 @@ function jump() {
 
     if (!gameRunning) return;
 
-    if (player.ground) {
+    if (player.grounded) {
 
-        player.vy = -player.jumpPower;
+        player.vy = -player.jump;
 
-        player.ground = false;
+        player.grounded = false;
     }
 }
 
 // ======================================================
-// پرتاب ستاره جادویی
+// تیراندازی
 // ======================================================
 
 function shoot() {
@@ -530,376 +403,98 @@ function shoot() {
 
     if (ammo <= 0) {
 
-        showMessage("✨ نیروی جادویی نداری!");
+        showMessage("🔫 تیر نداری!");
 
         return;
     }
-
-    if (player.shootCooldown > 0) return;
 
     ammo--;
 
     bullets.push({
 
-        x: player.x + player.w / 2,
+        x: player.x + player.w,
 
-        y: player.y + 25,
+        y: player.y + 30,
 
-        w: 18,
-        h: 18,
+        vx: 10,
 
-        vx: player.direction * 11
+        w: 16,
+
+        h: 6
     });
 
-    player.shootCooldown = 12;
-
-    updateUI();
+    updateHUD();
 }
 
 // ======================================================
-// آپدیت
+// آپدیت بازیکن
 // ======================================================
 
-function update() {
-
-    if (!gameRunning) return;
-
-    player.vx = 0;
+function updatePlayer() {
 
     if (keys.left) {
 
         player.vx = -player.speed;
-        player.direction = -1;
-    }
 
-    if (keys.right) {
+    } else if (keys.right) {
 
         player.vx = player.speed;
-        player.direction = 1;
+
+    } else {
+
+        player.vx *= .8;
     }
 
     player.x += player.vx;
 
-    // جاذبه
-    player.vy += 0.65;
+    player.vy += .55;
 
     player.y += player.vy;
 
-    player.ground = false;
+    player.grounded = false;
 
-    // برخورد با سکو
+    // برخورد با سکوها
     for (const p of platforms) {
 
         if (
 
-            player.x < p.x + p.w &&
             player.x + player.w > p.x &&
-            player.y + player.h <= p.y + 20 &&
-            player.y + player.h + player.vy >= p.y
+            player.x < p.x + p.w &&
+            player.y + player.h >= p.y &&
+            player.y + player.h <=
+                p.y + p.h + 15 &&
+            player.vy >= 0
 
         ) {
 
-            player.y = p.y - player.h;
+            player.y =
+                p.y - player.h;
 
             player.vy = 0;
 
-            player.ground = true;
+            player.grounded = true;
         }
     }
 
+    // محدودیت چپ
     if (player.x < 0) {
         player.x = 0;
     }
 
-    if (player.x > levelWidth - player.w) {
-        player.x = levelWidth - player.w;
-    }
-
-    // افتادن
-    if (player.y > 600) {
+    // سقوط
+    if (player.y > H + 150) {
 
         loseLife();
-
-        return;
     }
 
-    collectCoins();
-    collectAmmo();
-    collectHearts();
-
-    updateEnemies();
-    updateBullets();
-    updateBoss();
-    updateParticles();
-
-    if (player.shootCooldown > 0) {
-        player.shootCooldown--;
-    }
-
+    // بی‌حسی بعد از ضربه
     if (player.invincible > 0) {
         player.invincible--;
     }
-
-    // دوربین
-    camera = player.x - 330;
-
-    if (camera < 0) {
-        camera = 0;
-    }
-
-    if (camera > levelWidth - W) {
-        camera = levelWidth - W;
-    }
-
-    checkFlag();
 }
 
 // ======================================================
-// پرچم
-// ======================================================
-
-function checkFlag() {
-
-    if (!flag || !flag.active) return;
-
-    if (
-
-        player.x + player.w > flag.x &&
-        player.x < flag.x + 55 &&
-        player.y + player.h > flag.y
-
-    ) {
-
-        finishLevel();
-    }
-}
-
-// ======================================================
-// پایان مرحله
-// ======================================================
-
-function finishLevel() {
-
-    gameRunning = false;
-
-    showMessage(
-        "🎉 مرحله " + level + " تمام شد!"
-    );
-
-    setTimeout(nextLevel, 1200);
-}
-
-// ======================================================
-// مرحله بعد
-// ======================================================
-
-function nextLevel() {
-
-    level++;
-
-    if (level > 10) {
-
-        level = 1;
-
-        world++;
-
-        if (world > 4) {
-
-            startEnding();
-
-            return;
-        }
-    }
-
-    // مرحله جدید کاملاً از اول ساخته می‌شود
-    loadLevel();
-
-    gameRunning = true;
-
-    showMessage(
-        worlds[world].name +
-        " | مرحله " +
-        level
-    );
-
-    requestAnimationFrame(loop);
-}
-
-// ======================================================
-// پایان کل بازی
-// ======================================================
-
-function startEnding() {
-
-    gameRunning = false;
-
-    endingScene = true;
-
-    endingTimer = 0;
-
-    requestAnimationFrame(loop);
-}
-
-// ======================================================
-// جان
-// ======================================================
-
-function loseLife() {
-
-    lives--;
-
-    updateUI();
-
-    if (lives <= 0) {
-
-        gameRunning = false;
-
-        showMessage("💔 بازی تمام شد!");
-
-        return;
-    }
-
-    resetPlayer();
-
-    showMessage("❤️ یک جان کم شد!");
-}
-
-// ======================================================
-// آسیب
-// ======================================================
-
-function damagePlayer() {
-
-    if (player.invincible > 0) return;
-
-    player.invincible = 90;
-
-    if (shield > 0) {
-
-        shield--;
-
-        player.x -= 80;
-
-        showMessage(
-            "🛡️ محافظ ازت مراقبت کرد!"
-        );
-
-    } else {
-
-        loseLife();
-    }
-
-    updateUI();
-}
-
-// ======================================================
-// سکه
-// ======================================================
-
-function collectCoins() {
-
-    for (const c of coinItems) {
-
-        if (c.collected) continue;
-
-        if (
-
-            distance(
-                player.x + player.w / 2,
-                player.y + player.h / 2,
-                c.x,
-                c.y
-            ) < 30
-
-        ) {
-
-            c.collected = true;
-
-            coins++;
-
-            score += 100;
-
-            sparkle(c.x, c.y);
-        }
-    }
-
-    updateUI();
-}
-
-// ======================================================
-// نیروی جادویی
-// ======================================================
-
-function collectAmmo() {
-
-    for (const a of ammoItems) {
-
-        if (a.collected) continue;
-
-        if (
-
-            player.x < a.x + 35 &&
-            player.x + player.w > a.x &&
-            player.y < a.y + 35 &&
-            player.y + player.h > a.y
-
-        ) {
-
-            a.collected = true;
-
-            ammo += 10;
-
-            score += 50;
-
-            showMessage(
-                "✨ ۱۰ نیروی جادویی گرفتی!"
-            );
-        }
-    }
-
-    updateUI();
-}
-
-// ======================================================
-// قلب
-// ======================================================
-
-function collectHearts() {
-
-    for (const h of heartItems) {
-
-        if (h.collected) continue;
-
-        if (
-
-            player.x < h.x + 45 &&
-            player.x + player.w > h.x &&
-            player.y < h.y + 45 &&
-            player.y + player.h > h.y
-
-        ) {
-
-            h.collected = true;
-
-            if (lives < 8) {
-                lives++;
-            }
-
-            score += 200;
-
-            sparkle(h.x, h.y);
-
-            showMessage(
-                "❤️ یک جان اضافه گرفتی!"
-            );
-        }
-    }
-
-    updateUI();
-}
-
-// ======================================================
-// دشمن‌ها
+// آپدیت دشمن
 // ======================================================
 
 function updateEnemies() {
@@ -908,97 +503,29 @@ function updateEnemies() {
 
         if (!e.alive) continue;
 
-        e.x += e.direction * e.speed;
+        e.x += e.vx;
 
-        if (e.x < 250) {
-            e.direction = 1;
+        if (
+            e.x < e.minX ||
+            e.x > e.maxX
+        ) {
+
+            e.vx *= -1;
         }
 
-        if (e.x > levelWidth - 200) {
-            e.direction = -1;
-        }
+        // برخورد با بازیکن
+        if (
 
-        if (collision(player, e)) {
+            player.x + player.w > e.x &&
+            player.x < e.x + e.w &&
+            player.y + player.h > e.y &&
+            player.y < e.y + e.h
 
-            // پریدن روی دشمن
-            if (
+        ) {
 
-                player.vy > 0 &&
-                player.y + player.h < e.y + 25
-
-            ) {
-
-                e.alive = false;
-
-                player.vy = -9;
-
-                score += 200;
-
-                sparkle(e.x, e.y);
-
-            } else {
-
-                damagePlayer();
-            }
+            damagePlayer(e);
         }
     }
-
-    updateUI();
-}
-
-// ======================================================
-// ستاره‌های جادویی
-// ======================================================
-
-function updateBullets() {
-
-    for (const b of bullets) {
-
-        b.x += b.vx;
-
-        for (const e of enemies) {
-
-            if (
-                e.alive &&
-                collision(b, e)
-            ) {
-
-                e.alive = false;
-
-                b.x = -9999;
-
-                score += 250;
-
-                sparkle(e.x, e.y);
-            }
-        }
-
-        if (boss && collision(b, boss)) {
-
-            boss.hp--;
-
-            b.x = -9999;
-
-            score += 50;
-
-            sparkle(
-                boss.x + boss.w / 2,
-                boss.y + boss.h / 2
-            );
-
-            if (boss.hp <= 0) {
-                bossDefeated();
-            }
-        }
-    }
-
-    bullets = bullets.filter(
-        b =>
-            b.x > camera - 300 &&
-            b.x < camera + W + 300
-    );
-
-    updateUI();
 }
 
 // ======================================================
@@ -1007,70 +534,262 @@ function updateBullets() {
 
 function updateBoss() {
 
-    if (!boss) return;
+    if (!boss || !boss.alive) return;
 
-    boss.x += boss.direction * boss.speed;
+    boss.x += boss.vx;
 
-    if (boss.x < levelWidth - 700) {
-        boss.direction = 1;
+    if (
+        boss.x < levelWidth - 900 ||
+        boss.x > levelWidth - 300
+    ) {
+
+        boss.vx *= -1;
     }
 
-    if (boss.x > levelWidth - 200) {
-        boss.direction = -1;
-    }
+    if (
 
-    if (collision(player, boss)) {
-        damagePlayer();
+        player.x + player.w > boss.x &&
+        player.x < boss.x + boss.w &&
+        player.y + player.h > boss.y &&
+        player.y < boss.y + boss.h
+
+    ) {
+
+        damagePlayer(boss);
     }
 }
 
-function bossDefeated() {
-
-    boss = null;
-
-    score += 2000;
-
-    flag.active = true;
-
-    showMessage(
-        "👹 هیولا شکست خورد! 🚩 به پرچم برو!"
-    );
-
-    sparkle(
-        levelWidth - 450,
-        350
-    );
-}
-
 // ======================================================
-// رسم
+// آسیب
 // ======================================================
 
-function draw() {
+function damagePlayer(enemy) {
 
-    if (endingScene) {
+    if (player.invincible > 0) return;
 
-        drawEnding();
+    if (shield > 0) {
+
+        shield--;
+
+        player.invincible = 70;
+
+        showMessage("🛡️ سپر از تو محافظت کرد!");
+
+        updateHUD();
 
         return;
     }
 
-    drawBackground();
-    drawPlatforms();
-    drawCoins();
-    drawAmmo();
-    drawHearts();
-    drawEnemies();
-    drawBoss();
-    drawBullets();
-    drawFlag();
-    drawParticles();
-    drawPlayer();
-    drawStageInfo();
+    health--;
+
+    player.invincible = 100;
+
+    player.vy = -7;
+
+    player.x -= 60;
+
+    updateHUD();
+
+    if (health <= 0) {
+
+        gameOver();
+    }
 }
 
 // ======================================================
-// پس زمینه
+// آیتم‌ها
+// ======================================================
+
+function updateItems() {
+
+    // سکه
+    for (const c of coinItems) {
+
+        if (c.collected) continue;
+
+        if (
+
+            player.x + player.w > c.x - 15 &&
+            player.x < c.x + 15 &&
+            player.y + player.h > c.y - 15 &&
+            player.y < c.y + 15
+
+        ) {
+
+            c.collected = true;
+
+            coins++;
+
+            // هر 60 سکه = یک الماس
+            if (coins % 60 === 0) {
+
+                diamonds++;
+
+                showMessage(
+                    "💎 یک الماس گرفتی!"
+                );
+            }
+
+            updateHUD();
+        }
+    }
+
+    // مهمات
+    for (const a of ammoItems) {
+
+        if (a.collected) continue;
+
+        if (
+
+            player.x + player.w > a.x &&
+            player.x < a.x + 35 &&
+            player.y + player.h > a.y &&
+            player.y < a.y + 35
+
+        ) {
+
+            a.collected = true;
+
+            ammo += 3;
+
+            if (ammo > 7) {
+                ammo = 7;
+            }
+
+            showMessage("🔫 تیر گرفتی!");
+
+            updateHUD();
+        }
+    }
+
+    // قلب
+    for (const h of heartItems) {
+
+        if (h.collected) continue;
+
+        if (
+
+            player.x + player.w > h.x &&
+            player.x < h.x + 40 &&
+            player.y + player.h > h.y &&
+            player.y < h.y + 50
+
+        ) {
+
+            h.collected = true;
+
+            health++;
+
+            if (health > maxHealth) {
+                health = maxHealth;
+            }
+
+            showMessage("❤️ جان گرفتی!");
+
+            updateHUD();
+        }
+    }
+}
+
+// ======================================================
+// گلوله‌ها
+// ======================================================
+
+function updateBullets() {
+
+    for (const b of bullets) {
+
+        b.x += b.vx;
+    }
+
+    bullets =
+        bullets.filter(
+            b => b.x < levelWidth + 500
+        );
+
+    // دشمن‌ها
+    for (const b of bullets) {
+
+        for (const e of enemies) {
+
+            if (!e.alive) continue;
+
+            if (
+
+                b.x + b.w > e.x &&
+                b.x < e.x + e.w &&
+                b.y + b.h > e.y &&
+                b.y < e.y + e.h
+
+            ) {
+
+                e.alive = false;
+
+                b.x = levelWidth + 100;
+
+                coins++;
+
+                updateHUD();
+            }
+        }
+
+        // باس
+        if (
+            boss &&
+            boss.alive &&
+            b.x + b.w > boss.x &&
+            b.x < boss.x + boss.w &&
+            b.y + b.h > boss.y &&
+            b.y < boss.y + boss.h
+        ) {
+
+            boss.health--;
+
+            b.x = levelWidth + 100;
+
+            if (boss.health <= 0) {
+
+                boss.alive = false;
+
+                showMessage(
+                    "🏆 هیولا شکست خورد!"
+                );
+            }
+        }
+    }
+}
+
+// ======================================================
+// دوربین
+// ======================================================
+
+function updateCamera() {
+
+    const target =
+        player.x - W * .4;
+
+    camera +=
+        (target - camera) * .08;
+
+    if (camera < 0) {
+        camera = 0;
+    }
+
+    if (
+        camera >
+        levelWidth - W
+    ) {
+
+        camera =
+            Math.max(
+                0,
+                levelWidth - W
+            );
+    }
+}
+
+// ======================================================
+// پس‌زمینه
 // ======================================================
 
 function drawBackground() {
@@ -1079,204 +798,145 @@ function drawBackground() {
 
     ctx.fillStyle = wd.sky;
 
-    ctx.fillRect(0, 0, W, H);
+    ctx.fillRect(
+        0,
+        0,
+        W,
+        H
+    );
 
-    if (world === 1) drawForest();
-    if (world === 2) drawSnow();
-    if (world === 3) drawWater();
-    if (world === 4) drawFire();
-}
-
-// ======================================================
-// جنگل
-// ======================================================
-
-function drawForest() {
-
-    for (let x = -100; x < W + 200; x += 130) {
-
-        const px = x - camera * 0.2;
-
-        ctx.fillStyle = "#70452b";
-
-        ctx.fillRect(
-            px,
-            260,
-            25,
-            190
-        );
-
-        ctx.fillStyle = "#31944b";
-
-        ctx.beginPath();
-
-        ctx.arc(
-            px + 12,
-            235,
-            65,
-            0,
-            Math.PI * 2
-        );
-
-        ctx.fill();
-    }
-}
-
-// ======================================================
-// برف
-// ======================================================
-
-function drawSnow() {
-
+    // کوه‌ها
     ctx.fillStyle =
-        "rgba(255,255,255,0.9)";
+        world === 3
+            ? "#35100d"
+            : "rgba(30,80,100,.35)";
 
-    for (let i = 0; i < 110; i++) {
+    for (let i = -2; i < 12; i++) {
 
-        let x =
-            (i * 137 - camera * 0.2) % W;
-
-        if (x < 0) x += W;
-
-        let y =
-            (i * 67) % 430;
-
-        ctx.beginPath();
-
-        ctx.arc(
-            x,
-            y,
-            3,
-            0,
-            Math.PI * 2
-        );
-
-        ctx.fill();
-    }
-
-    // کوه‌های برفی
-    ctx.fillStyle = "#e8f7ff";
-
-    for (let x = -100; x < W + 300; x += 260) {
+        const x =
+            i * 350 -
+            camera * .25;
 
         ctx.beginPath();
 
         ctx.moveTo(
-            x - camera * 0.15,
-            330
+            x,
+            H - 80
         );
 
         ctx.lineTo(
-            x + 130 - camera * 0.15,
-            150
+            x + 170,
+            H - 330
         );
 
         ctx.lineTo(
-            x + 260 - camera * 0.15,
-            330
+            x + 350,
+            H - 80
         );
 
         ctx.closePath();
 
         ctx.fill();
     }
-}
 
-// ======================================================
-// آب
-// ======================================================
-
-function drawWater() {
-
-    ctx.strokeStyle =
-        "rgba(255,255,255,0.35)";
-
-    ctx.lineWidth = 3;
-
-    for (let y = 80; y < H; y += 70) {
-
-        ctx.beginPath();
-
-        ctx.moveTo(0, y);
-
-        ctx.quadraticCurveTo(
-            220,
-            y - 30,
-            450,
-            y
-        );
-
-        ctx.quadraticCurveTo(
-            700,
-            y + 30,
-            W,
-            y
-        );
-
-        ctx.stroke();
-    }
-
-    // حباب‌های پس‌زمینه
-    ctx.strokeStyle =
-        "rgba(255,255,255,0.3)";
-
-    for (let i = 0; i < 25; i++) {
-
-        const x =
-            (i * 91 - camera * 0.1) % W;
-
-        const y =
-            80 + (i * 47) % 330;
-
-        ctx.beginPath();
-
-        ctx.arc(
-            x,
-            y,
-            7,
-            0,
-            Math.PI * 2
-        );
-
-        ctx.stroke();
-    }
-}
-
-// ======================================================
-// آتش
-// ======================================================
-
-function drawFire() {
-
-    for (let i = 0; i < 35; i++) {
-
-        let x =
-            (i * 91 - camera * 0.15) % W;
-
-        if (x < 0) x += W;
-
-        let y =
-            70 + (i * 43) % 330;
+    // برف
+    if (world === 1) {
 
         ctx.fillStyle =
-            "rgba(255,190,0,0.4)";
+            "rgba(255,255,255,.8)";
 
-        ctx.beginPath();
+        for (let i = 0; i < 80; i++) {
 
-        ctx.arc(
-            x,
-            y,
-            16,
-            0,
-            Math.PI * 2
-        );
+            let x =
+                (i * 137 -
+                    camera * .15) %
+                W;
 
-        ctx.fill();
+            if (x < 0) x += W;
+
+            let y =
+                (i * 67) %
+                (H - 100);
+
+            ctx.beginPath();
+
+            ctx.arc(
+                x,
+                y,
+                3,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fill();
+        }
+    }
+
+    // آب
+    if (world === 2) {
+
+        ctx.strokeStyle =
+            "rgba(255,255,255,.3)";
+
+        ctx.lineWidth = 3;
+
+        for (
+            let y = 100;
+            y < H;
+            y += 65
+        ) {
+
+            ctx.beginPath();
+
+            ctx.moveTo(0, y);
+
+            ctx.quadraticCurveTo(
+                W / 2,
+                y - 25,
+                W,
+                y
+            );
+
+            ctx.stroke();
+        }
+    }
+
+    // آتش
+    if (world === 3) {
+
+        for (let i = 0; i < 25; i++) {
+
+            let x =
+                (i * 111 -
+                    camera * .1) %
+                W;
+
+            if (x < 0) x += W;
+
+            let y =
+                80 +
+                (i * 47) % 300;
+
+            ctx.fillStyle =
+                "rgba(255,150,0,.25)";
+
+            ctx.beginPath();
+
+            ctx.arc(
+                x,
+                y,
+                15,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fill();
+        }
     }
 }
 
 // ======================================================
-// سکو
+// سکوها
 // ======================================================
 
 function drawPlatforms() {
@@ -1285,9 +945,11 @@ function drawPlatforms() {
 
     for (const p of platforms) {
 
-        const x = p.x - camera;
+        const x =
+            p.x - camera;
 
-        ctx.fillStyle = wd.ground;
+        ctx.fillStyle =
+            wd.ground;
 
         ctx.fillRect(
             x,
@@ -1296,7 +958,8 @@ function drawPlatforms() {
             p.h
         );
 
-        ctx.fillStyle = wd.top;
+        ctx.fillStyle =
+            wd.top;
 
         ctx.fillRect(
             x,
@@ -1308,30 +971,38 @@ function drawPlatforms() {
 }
 
 // ======================================================
-// دختر
+// بازیکن
 // ======================================================
 
 function drawPlayer() {
 
     if (
+
         player.invincible > 0 &&
-        Math.floor(player.invincible / 6) % 2 === 0
+        Math.floor(
+            player.invincible / 6
+        ) % 2 === 0
+
     ) {
+
         return;
     }
 
-    const x = player.x - camera;
-    const y = player.y;
+    const x =
+        player.x - camera;
+
+    const y =
+        player.y;
 
     // مو
-    ctx.fillStyle = "#4b2412";
+    ctx.fillStyle = "#4a2515";
 
     ctx.beginPath();
 
     ctx.arc(
         x + 19,
-        y + 15,
-        20,
+        y + 17,
+        21,
         0,
         Math.PI * 2
     );
@@ -1345,7 +1016,7 @@ function drawPlayer() {
 
     ctx.arc(
         x + 19,
-        y + 20,
+        y + 21,
         15,
         0,
         Math.PI * 2
@@ -1353,21 +1024,21 @@ function drawPlayer() {
 
     ctx.fill();
 
-    // مو روی پیشانی
-    ctx.fillStyle = "#4b2412";
+    // مو
+    ctx.fillStyle = "#4a2515";
 
     ctx.fillRect(
         x + 4,
-        y + 3,
+        y + 2,
         30,
         12
     );
 
-    // چشم‌ها
+    // چشم
     ctx.fillStyle = "#222";
 
     ctx.fillRect(
-        x + 12,
+        x + 11,
         y + 18,
         4,
         5
@@ -1381,7 +1052,7 @@ function drawPlayer() {
     );
 
     // لباس
-    ctx.fillStyle = "#ff4f81";
+    ctx.fillStyle = "#ef4f80";
 
     ctx.fillRect(
         x + 5,
@@ -1407,37 +1078,37 @@ function drawPlayer() {
         20
     );
 
-    // پاها
+    // پا
     ctx.fillStyle = "#273746";
 
     ctx.fillRect(
         x + 7,
-        y + 56,
+        y + 57,
         9,
         15
     );
 
     ctx.fillRect(
         x + 23,
-        y + 56,
+        y + 57,
         9,
         15
     );
 
-    // محافظ
+    // سپر
     if (shield > 0) {
 
         ctx.strokeStyle =
-            "rgba(0,190,255,0.65)";
+            "rgba(0,200,255,.75)";
 
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 4;
 
         ctx.beginPath();
 
         ctx.arc(
             x + 19,
             y + 35,
-            37,
+            40,
             0,
             Math.PI * 2
         );
@@ -1456,9 +1127,11 @@ function drawCoins() {
 
         if (c.collected) continue;
 
-        const x = c.x - camera;
+        const x =
+            c.x - camera;
 
-        ctx.fillStyle = "#ffd700";
+        ctx.fillStyle =
+            "#ffd700";
 
         ctx.beginPath();
 
@@ -1472,20 +1145,24 @@ function drawCoins() {
 
         ctx.fill();
 
-        ctx.strokeStyle = "#b8860b";
+        ctx.strokeStyle =
+            "#b8860b";
 
         ctx.lineWidth = 3;
 
         ctx.stroke();
 
-        ctx.fillStyle = "#fff3a3";
+        ctx.fillStyle =
+            "#fff3a3";
 
-        ctx.font = "bold 12px Arial";
+        ctx.font =
+            "bold 12px Arial";
 
-        ctx.textAlign = "center";
+        ctx.textAlign =
+            "center";
 
         ctx.fillText(
-            "★",
+            "$",
             x,
             c.y + 4
         );
@@ -1493,7 +1170,7 @@ function drawCoins() {
 }
 
 // ======================================================
-// جعبه نیروی جادویی
+// مهمات
 // ======================================================
 
 function drawAmmo() {
@@ -1502,9 +1179,11 @@ function drawAmmo() {
 
         if (a.collected) continue;
 
-        const x = a.x - camera;
+        const x =
+            a.x - camera;
 
-        ctx.fillStyle = "#704d32";
+        ctx.fillStyle =
+            "#704d32";
 
         ctx.fillRect(
             x,
@@ -1513,22 +1192,25 @@ function drawAmmo() {
             35
         );
 
-        ctx.fillStyle = "#ffd700";
+        ctx.fillStyle =
+            "#ffd700";
 
-        ctx.font = "22px Arial";
+        ctx.font =
+            "20px Arial";
 
-        ctx.textAlign = "center";
+        ctx.textAlign =
+            "center";
 
         ctx.fillText(
-            "✨",
+            "🔫",
             x + 17,
-            a.y + 26
+            a.y + 25
         );
     }
 }
 
 // ======================================================
-// قلب‌ها
+// قلب
 // ======================================================
 
 function drawHearts() {
@@ -1537,11 +1219,14 @@ function drawHearts() {
 
         if (h.collected) continue;
 
-        const x = h.x - camera;
+        const x =
+            h.x - camera;
 
-        ctx.font = "34px Arial";
+        ctx.font =
+            "32px Arial";
 
-        ctx.textAlign = "center";
+        ctx.textAlign =
+            "center";
 
         ctx.fillText(
             "❤️",
@@ -1549,13 +1234,15 @@ function drawHearts() {
             h.y + 30
         );
 
-        ctx.fillStyle = "#f4b942";
+        // سکوی کوچک زیر قلب
+        ctx.fillStyle =
+            "#e4a82f";
 
         ctx.fillRect(
             x - 18,
             h.y + 38,
             72,
-            10
+            9
         );
     }
 }
@@ -1570,10 +1257,16 @@ function drawEnemies() {
 
         if (!e.alive) continue;
 
+        const x =
+            e.x - camera;
+
+        const y =
+            e.y;
+
         drawEnemy(
             e.type,
-            e.x - camera,
-            e.y
+            x,
+            y
         );
     }
 }
@@ -1583,13 +1276,14 @@ function drawEnemy(type, x, y) {
     // حلزون
     if (type === "snail") {
 
-        ctx.fillStyle = "#8e44ad";
+        ctx.fillStyle =
+            "#9b59b6";
 
         ctx.beginPath();
 
         ctx.arc(
             x + 22,
-            y + 24,
+            y + 25,
             20,
             0,
             Math.PI * 2
@@ -1597,13 +1291,14 @@ function drawEnemy(type, x, y) {
 
         ctx.fill();
 
-        ctx.fillStyle = "#6c3483";
+        ctx.fillStyle =
+            "#6c3483";
 
         ctx.beginPath();
 
         ctx.arc(
             x + 22,
-            y + 24,
+            y + 25,
             10,
             0,
             Math.PI * 2
@@ -1611,18 +1306,36 @@ function drawEnemy(type, x, y) {
 
         ctx.fill();
 
+        ctx.fillStyle =
+            "#4aa3df";
+
+        ctx.fillRect(
+            x + 35,
+            y + 5,
+            4,
+            18
+        );
+
+        ctx.fillRect(
+            x + 44,
+            y + 5,
+            4,
+            18
+        );
+
         return;
     }
 
-    // لاکپشت
+    // لاک‌پشت
     if (type === "turtle") {
 
-        ctx.fillStyle = "#267a45";
+        ctx.fillStyle =
+            "#277a45";
 
         ctx.beginPath();
 
         ctx.ellipse(
-            x + 21,
+            x + 22,
             y + 25,
             23,
             17,
@@ -1633,7 +1346,8 @@ function drawEnemy(type, x, y) {
 
         ctx.fill();
 
-        ctx.fillStyle = "#4caf50";
+        ctx.fillStyle =
+            "#4caf50";
 
         ctx.beginPath();
 
@@ -1647,7 +1361,8 @@ function drawEnemy(type, x, y) {
 
         ctx.fill();
 
-        ctx.fillStyle = "#111";
+        ctx.fillStyle =
+            "#111";
 
         ctx.beginPath();
 
@@ -1667,7 +1382,8 @@ function drawEnemy(type, x, y) {
     // کلم
     if (type === "cabbage") {
 
-        ctx.fillStyle = "#27ae60";
+        ctx.fillStyle =
+            "#2ecc71";
 
         ctx.beginPath();
 
@@ -1681,21 +1397,29 @@ function drawEnemy(type, x, y) {
 
         ctx.fill();
 
+        ctx.strokeStyle =
+            "#176b3a";
+
+        ctx.lineWidth = 3;
+
+        ctx.stroke();
+
         return;
     }
 
     // پنگوئن
     if (type === "penguin") {
 
-        ctx.fillStyle = "#263238";
+        ctx.fillStyle =
+            "#263238";
 
         ctx.beginPath();
 
         ctx.ellipse(
             x + 22,
-            y + 23,
-            19,
-            25,
+            y + 25,
+            20,
+            27,
             0,
             0,
             Math.PI * 2
@@ -1703,15 +1427,16 @@ function drawEnemy(type, x, y) {
 
         ctx.fill();
 
-        ctx.fillStyle = "white";
+        ctx.fillStyle =
+            "white";
 
         ctx.beginPath();
 
         ctx.ellipse(
             x + 22,
-            y + 28,
+            y + 30,
             12,
-            17,
+            18,
             0,
             0,
             Math.PI * 2
@@ -1719,13 +1444,14 @@ function drawEnemy(type, x, y) {
 
         ctx.fill();
 
-        ctx.fillStyle = "#f39c12";
+        ctx.fillStyle =
+            "#f39c12";
 
         ctx.fillRect(
             x + 16,
-            y + 25,
-            12,
-            6
+            y + 24,
+            13,
+            7
         );
 
         return;
@@ -1734,7 +1460,8 @@ function drawEnemy(type, x, y) {
     // گوسفند
     if (type === "sheep") {
 
-        ctx.fillStyle = "white";
+        ctx.fillStyle =
+            "white";
 
         ctx.beginPath();
 
@@ -1748,12 +1475,13 @@ function drawEnemy(type, x, y) {
 
         ctx.fill();
 
-        ctx.fillStyle = "#333";
+        ctx.fillStyle =
+            "#333";
 
         ctx.beginPath();
 
         ctx.arc(
-            x + 41,
+            x + 42,
             y + 23,
             9,
             0,
@@ -1768,7 +1496,8 @@ function drawEnemy(type, x, y) {
     // گلوله برفی
     if (type === "snowball") {
 
-        ctx.fillStyle = "white";
+        ctx.fillStyle =
+            "white";
 
         ctx.beginPath();
 
@@ -1782,7 +1511,8 @@ function drawEnemy(type, x, y) {
 
         ctx.fill();
 
-        ctx.strokeStyle = "#8bd8ff";
+        ctx.strokeStyle =
+            "#8bd8ff";
 
         ctx.lineWidth = 3;
 
@@ -1794,7 +1524,8 @@ function drawEnemy(type, x, y) {
     // ماهی
     if (type === "fish") {
 
-        ctx.fillStyle = "#ff7675";
+        ctx.fillStyle =
+            "#ff7675";
 
         ctx.beginPath();
 
@@ -1810,7 +1541,8 @@ function drawEnemy(type, x, y) {
 
         ctx.fill();
 
-        ctx.fillStyle = "#ff5252";
+        ctx.fillStyle =
+            "#ff5252";
 
         ctx.beginPath();
 
@@ -1839,7 +1571,8 @@ function drawEnemy(type, x, y) {
     // حباب
     if (type === "bubble") {
 
-        ctx.strokeStyle = "white";
+        ctx.strokeStyle =
+            "white";
 
         ctx.lineWidth = 4;
 
@@ -1861,7 +1594,8 @@ function drawEnemy(type, x, y) {
     // آتش
     if (type === "fire") {
 
-        ctx.fillStyle = "#ff3d00";
+        ctx.fillStyle =
+            "#ff3d00";
 
         ctx.beginPath();
 
@@ -1884,7 +1618,8 @@ function drawEnemy(type, x, y) {
 
         ctx.fill();
 
-        ctx.fillStyle = "#ffd600";
+        ctx.fillStyle =
+            "#ffd600";
 
         ctx.beginPath();
 
@@ -1904,7 +1639,8 @@ function drawEnemy(type, x, y) {
     // گدازه
     if (type === "lava") {
 
-        ctx.fillStyle = "#ff5722";
+        ctx.fillStyle =
+            "#ff5722";
 
         ctx.beginPath();
 
@@ -1920,32 +1656,6 @@ function drawEnemy(type, x, y) {
 
         return;
     }
-
-    // هیولای کوچک
-    ctx.fillStyle = "#6c5ce7";
-
-    ctx.fillRect(
-        x,
-        y,
-        44,
-        43
-    );
-
-    ctx.fillStyle = "white";
-
-    ctx.fillRect(
-        x + 8,
-        y + 9,
-        9,
-        9
-    );
-
-    ctx.fillRect(
-        x + 28,
-        y + 9,
-        9,
-        9
-    );
 }
 
 // ======================================================
@@ -1954,116 +1664,108 @@ function drawEnemy(type, x, y) {
 
 function drawBoss() {
 
-    if (!boss) return;
+    if (!boss || !boss.alive) return;
 
-    const x = boss.x - camera;
-    const y = boss.y;
+    const x =
+        boss.x - camera;
 
-    const bossColors = [
-        "#7b241c",
-        "#34495e",
-        "#145a86",
-        "#641e16"
-    ];
+    const y =
+        boss.y;
+
+    // بدن
+    ctx.fillStyle =
+        world === 3
+            ? "#8e2409"
+            : "#56368c";
+
+    ctx.beginPath();
+
+    ctx.roundRect(
+        x,
+        y,
+        boss.w,
+        boss.h,
+        30
+    );
+
+    ctx.fill();
+
+    // چشم‌ها
+    ctx.fillStyle =
+        "white";
+
+    ctx.fillRect(
+        x + 25,
+        y + 30,
+        30,
+        30
+    );
+
+    ctx.fillRect(
+        x + 95,
+        y + 30,
+        30,
+        30
+    );
 
     ctx.fillStyle =
-        bossColors[world - 1];
+        "#111";
 
     ctx.beginPath();
 
     ctx.arc(
-        x + 75,
-        y + 75,
-        70,
+        x + 40,
+        y + 45,
+        8,
         0,
         Math.PI * 2
     );
 
     ctx.fill();
 
-    // شاخ
-    ctx.fillStyle = "#ddd";
-
     ctx.beginPath();
 
-    ctx.moveTo(x + 35, y + 25);
-    ctx.lineTo(x + 10, y - 15);
-    ctx.lineTo(x + 55, y + 15);
-
-    ctx.closePath();
+    ctx.arc(
+        x + 110,
+        y + 45,
+        8,
+        0,
+        Math.PI * 2
+    );
 
     ctx.fill();
-
-    ctx.beginPath();
-
-    ctx.moveTo(x + 115, y + 25);
-    ctx.lineTo(x + 140, y - 15);
-    ctx.lineTo(x + 95, y + 15);
-
-    ctx.closePath();
-
-    ctx.fill();
-
-    // چشم
-    ctx.fillStyle = "white";
-
-    ctx.fillRect(
-        x + 35,
-        y + 55,
-        20,
-        20
-    );
-
-    ctx.fillRect(
-        x + 95,
-        y + 55,
-        20,
-        20
-    );
-
-    ctx.fillStyle = "#111";
-
-    ctx.fillRect(
-        x + 41,
-        y + 61,
-        8,
-        12
-    );
-
-    ctx.fillRect(
-        x + 101,
-        y + 61,
-        8,
-        12
-    );
 
     // دهان
-    ctx.fillStyle = "#222";
+    ctx.fillStyle =
+        "#111";
 
     ctx.fillRect(
-        x + 35,
-        y + 105,
-        80,
+        x + 40,
+        y + 95,
+        70,
         18
     );
 
-    // سلامتی
-    ctx.fillStyle = "#222";
+    // نوار سلامتی
+    ctx.fillStyle =
+        "#222";
 
     ctx.fillRect(
         x,
-        y - 35,
-        150,
-        15
+        y - 25,
+        boss.w,
+        12
     );
 
-    ctx.fillStyle = "#e74c3c";
+    ctx.fillStyle =
+        "#e74c3c";
 
     ctx.fillRect(
         x,
-        y - 35,
-        150 * (boss.hp / boss.maxHp),
-        15
+        y - 25,
+        boss.w *
+            (boss.health / 15),
+        12
     );
 }
 
@@ -2073,37 +1775,37 @@ function drawBoss() {
 
 function drawFlag() {
 
-    if (!flag) return;
+    const x =
+        flag.x - camera;
 
-    const x = flag.x - camera;
-
-    ctx.fillStyle = "#555";
+    ctx.fillStyle =
+        "#5b3a29";
 
     ctx.fillRect(
         x,
-        350,
-        7,
-        100
+        flag.y,
+        8,
+        120
     );
 
     ctx.fillStyle =
-        flag.active ? "#ff4757" : "#777";
+        "#ff4757";
 
     ctx.beginPath();
 
     ctx.moveTo(
-        x + 7,
-        350
+        x + 8,
+        flag.y
     );
 
     ctx.lineTo(
-        x + 70,
-        370
+        x + 75,
+        flag.y + 25
     );
 
     ctx.lineTo(
-        x + 7,
-        392
+        x + 8,
+        flag.y + 50
     );
 
     ctx.closePath();
@@ -2112,396 +1814,332 @@ function drawFlag() {
 }
 
 // ======================================================
-// ستاره‌ها
+// گلوله‌ها
 // ======================================================
 
 function drawBullets() {
 
     for (const b of bullets) {
 
-        const x = b.x - camera;
-
-        ctx.fillStyle = "#fff200";
-
-        ctx.beginPath();
-
-        ctx.arc(
-            x,
-            b.y,
-            9,
-            0,
-            Math.PI * 2
-        );
-
-        ctx.fill();
-
-        ctx.fillStyle = "#ffffff";
-
-        ctx.beginPath();
-
-        ctx.arc(
-            x - 3,
-            b.y - 3,
-            3,
-            0,
-            Math.PI * 2
-        );
-
-        ctx.fill();
-    }
-}
-
-// ======================================================
-// ذرات
-// ======================================================
-
-function updateParticles() {
-
-    for (const p of particles) {
-
-        p.x += p.vx;
-        p.y += p.vy;
-
-        p.vy += 0.15;
-
-        p.life--;
-    }
-
-    particles = particles.filter(
-        p => p.life > 0
-    );
-}
-
-function drawParticles() {
-
-    ctx.fillStyle = "#ffd700";
-
-    for (const p of particles) {
+        ctx.fillStyle =
+            "#ffe066";
 
         ctx.fillRect(
-            p.x - camera,
-            p.y,
-            5,
-            5
+            b.x - camera,
+            b.y,
+            b.w,
+            b.h
         );
     }
 }
 
-function sparkle(x, y) {
-
-    for (let i = 0; i < 15; i++) {
-
-        particles.push({
-
-            x: x,
-            y: y,
-
-            vx:
-                (Math.random() - 0.5) * 7,
-
-            vy:
-                (Math.random() - 0.5) * 7,
-
-            life: 30
-        });
-    }
-}
-
 // ======================================================
-// اطلاعات مرحله
+// رسم کل بازی
 // ======================================================
 
-function drawStageInfo() {
+function draw() {
 
-    ctx.fillStyle =
-        "rgba(0,0,0,0.55)";
-
-    ctx.fillRect(
-        15,
-        15,
-        280,
-        65
-    );
-
-    ctx.fillStyle = "white";
-
-    ctx.textAlign = "right";
-
-    ctx.font = "bold 18px Arial";
-
-    ctx.fillText(
-        worlds[world].name,
-        280,
-        40
-    );
-
-    ctx.font = "15px Arial";
-
-    ctx.fillText(
-        "مرحله " + level + " از 10",
-        280,
-        63
-    );
-}
-
-// ======================================================
-// پایان بازی
-// ======================================================
-
-function drawEnding() {
-
-    ctx.fillStyle = "#18254a";
-
-    ctx.fillRect(
+    ctx.clearRect(
         0,
         0,
         W,
         H
     );
 
-    // ستاره‌ها
-    for (let i = 0; i < 80; i++) {
+    drawBackground();
 
-        const x = (i * 113) % W;
-        const y = (i * 67) % 300;
+    drawPlatforms();
 
-        ctx.fillStyle = "#fff";
+    drawCoins();
 
-        ctx.fillRect(
-            x,
-            y,
-            3,
-            3
-        );
+    drawAmmo();
+
+    drawHearts();
+
+    drawEnemies();
+
+    drawBoss();
+
+    drawFlag();
+
+    drawBullets();
+
+    drawPlayer();
+}
+
+// ======================================================
+// پایان مرحله
+// ======================================================
+
+function finishLevel() {
+
+    gameRunning = false;
+
+    // مرحله بعد باز شود
+    const globalLevel =
+        world * 10 + level;
+
+    if (
+        globalLevel >= unlockedLevel
+    ) {
+
+        unlockedLevel =
+            Math.min(
+                40,
+                globalLevel + 1
+            );
     }
 
-    // زمین
-    ctx.fillStyle = "#304d3b";
+    updateHUD();
 
-    ctx.fillRect(
-        0,
-        390,
-        W,
-        110
-    );
+    showScreen("finish");
 
-    // قفس
-    ctx.fillStyle = "#444";
-
-    ctx.fillRect(
-        560,
-        230,
-        180,
-        160
-    );
-
-    // میله‌های قفس
-    ctx.strokeStyle = "#bbb";
-
-    ctx.lineWidth = 8;
-
-    for (let x = 575; x < 740; x += 30) {
-
-        ctx.beginPath();
-
-        ctx.moveTo(
-            x,
-            230
+    const finishCoins =
+        document.getElementById(
+            "finishCoins"
         );
 
-        ctx.lineTo(
-            x,
-            390
+    const finishDiamonds =
+        document.getElementById(
+            "finishDiamonds"
         );
 
-        ctx.stroke();
+    if (finishCoins) {
+        finishCoins.textContent =
+            coins;
     }
 
-    // پدر داخل قفس
-    drawFather(
-        650,
-        300
-    );
-
-    // دختر
-    drawEndingGirl(
-        400,
-        332
-    );
-
-    ctx.textAlign = "center";
-
-    ctx.fillStyle = "#fff";
-
-    ctx.font = "bold 38px Arial";
-
-    ctx.fillText(
-        "🏆 پدر آزاد شد!",
-        450,
-        80
-    );
-
-    ctx.font = "22px Arial";
-
-    ctx.fillText(
-        "الینا توانست تمام ۴۰ مرحله را پشت سر بگذارد ❤️",
-        450,
-        120
-    );
-
-    ctx.font = "20px Arial";
-
-    ctx.fillText(
-        "✨ مأموریت با موفقیت تمام شد ✨",
-        450,
-        450
-    );
+    if (finishDiamonds) {
+        finishDiamonds.textContent =
+            diamonds;
+    }
 }
 
 // ======================================================
-// پدر
+// مرحله بعد
 // ======================================================
 
-function drawFather(x, y) {
+function nextLevel() {
 
-    // سر
-    ctx.fillStyle = "#d8a27c";
+    if (level < 10) {
 
-    ctx.beginPath();
+        level++;
 
-    ctx.arc(
-        x,
-        y - 45,
-        25,
-        0,
-        Math.PI * 2
-    );
+    } else {
 
-    ctx.fill();
+        if (world < 3) {
 
-    // مو
-    ctx.fillStyle = "#4a2a18";
+            world++;
 
-    ctx.beginPath();
+            level = 1;
 
-    ctx.arc(
-        x,
-        y - 58,
-        24,
-        Math.PI,
-        Math.PI * 2
-    );
+        } else {
 
-    ctx.fill();
+            showStoryEnd();
 
-    // بدن
-    ctx.fillStyle = "#3767a8";
+            return;
+        }
+    }
 
-    ctx.fillRect(
-        x - 28,
-        y - 20,
-        56,
-        65
-    );
+    hideAllScreens();
 
-    // پا
-    ctx.fillStyle = "#252b38";
+    createLevel();
 
-    ctx.fillRect(
-        x - 20,
-        y + 45,
-        15,
-        35
-    );
+    gameRunning = true;
 
-    ctx.fillRect(
-        x + 5,
-        y + 45,
-        15,
-        35
-    );
+    updateHUD();
 }
 
 // ======================================================
-// دختر در پایان
+// بازی از مرحله انتخاب‌شده
 // ======================================================
 
-function drawEndingGirl(x, y) {
+function startLevel(selectedLevel) {
 
-    ctx.fillStyle = "#4b2412";
+    const globalLevel =
+        world * 10 + selectedLevel;
 
-    ctx.beginPath();
+    if (
+        globalLevel > unlockedLevel
+    ) {
 
-    ctx.arc(
-        x,
-        y - 50,
-        28,
-        0,
-        Math.PI * 2
-    );
+        showMessage(
+            "🔒 این مرحله هنوز باز نشده!"
+        );
 
-    ctx.fill();
+        return;
+    }
 
-    ctx.fillStyle = "#ffd0a8";
+    level = selectedLevel;
 
-    ctx.beginPath();
+    hideAllScreens();
 
-    ctx.arc(
-        x,
-        y - 43,
-        21,
-        0,
-        Math.PI * 2
-    );
+    createLevel();
 
-    ctx.fill();
+    gameRunning = true;
 
-    ctx.fillStyle = "#ff4f81";
+    health = 3;
+    shield = 0;
+    ammo = 7;
 
-    ctx.fillRect(
-        x - 25,
-        y - 20,
-        50,
-        70
-    );
-
-    ctx.fillStyle = "#273746";
-
-    ctx.fillRect(
-        x - 20,
-        y + 50,
-        15,
-        40
-    );
-
-    ctx.fillRect(
-        x + 5,
-        y + 50,
-        15,
-        40
-    );
+    updateHUD();
 }
 
 // ======================================================
-// رابط کاربری
+// باخت
 // ======================================================
 
-function updateUI() {
+function gameOver() {
 
-    setText("score", score);
-    setText("coins", coins);
-    setText("lives", lives);
-    setText("ammo", ammo);
-    setText("shield", shield);
+    gameRunning = false;
+
+    showScreen("gameover");
+}
+
+// ======================================================
+// منوی اصلی
+// ======================================================
+
+function showMenu() {
+
+    gameRunning = false;
+
+    hideAllScreens();
+
+    const menu =
+        document.getElementById("menu");
+
+    if (menu) {
+        menu.classList.remove("hidden");
+    }
+}
+
+// ======================================================
+// پایان داستان
+// ======================================================
+
+function showStoryEnd() {
+
+    gameRunning = false;
+
+    hideAllScreens();
+
+    const screen =
+        document.getElementById(
+            "storyEnd"
+        );
+
+    if (screen) {
+        screen.classList.remove("hidden");
+    }
+}
+
+// ======================================================
+// نمایش صفحه
+// ======================================================
+
+function showScreen(id) {
+
+    hideAllScreens();
+
+    const element =
+        document.getElementById(id);
+
+    if (element) {
+
+        element.classList.remove(
+            "hidden"
+        );
+    }
+}
+
+// ======================================================
+// مخفی کردن صفحات
+// ======================================================
+
+function hideAllScreens() {
+
+    document
+        .querySelectorAll(".screen")
+        .forEach(screen => {
+
+            screen.classList.add(
+                "hidden"
+            );
+        });
+
+    const hud =
+        document.getElementById("hud");
+
+    const controls =
+        document.getElementById(
+            "controls"
+        );
+
+    if (gameRunning) {
+
+        if (hud) {
+            hud.classList.remove(
+                "hidden"
+            );
+        }
+
+        if (controls) {
+            controls.classList.remove(
+                "hidden"
+            );
+        }
+
+    } else {
+
+        if (hud) {
+            hud.classList.add(
+                "hidden"
+            );
+        }
+
+        if (controls) {
+            controls.classList.add(
+                "hidden"
+            );
+        }
+    }
+}
+
+// ======================================================
+// HUD
+// ======================================================
+
+function updateHUD() {
 
     setText(
-        "worldName",
-        worlds[world].name
+        "health",
+        health
     );
 
     setText(
-        "levelNumber",
-        level
+        "shield",
+        shield
+    );
+
+    setText(
+        "coins",
+        coins
+    );
+
+    setText(
+        "diamonds",
+        diamonds
+    );
+
+    setText(
+        "ammo",
+        ammo
+    );
+
+    setText(
+        "currentLevel",
+        world * 10 + level
     );
 }
 
@@ -2519,45 +2157,280 @@ function setText(id, value) {
 // پیام
 // ======================================================
 
+let messageTimer = null;
+
 function showMessage(text) {
 
-    const el =
-        document.getElementById("message");
+    const msg =
+        document.getElementById(
+            "message"
+        );
 
-    if (el) {
-        el.textContent = text;
+    if (!msg) return;
+
+    msg.textContent = text;
+
+    msg.style.opacity = "1";
+
+    clearTimeout(messageTimer);
+
+    messageTimer =
+        setTimeout(() => {
+
+            msg.style.opacity =
+                "0";
+
+        }, 1800);
+}
+
+// ======================================================
+// ساخت نقشه مراحل
+// ======================================================
+
+function buildLevelMap() {
+
+    const grid =
+        document.getElementById(
+            "levelGrid"
+        );
+
+    if (!grid) return;
+
+    grid.innerHTML = "";
+
+    for (let i = 1; i <= 10; i++) {
+
+        const button =
+            document.createElement(
+                "button"
+            );
+
+        const global =
+            world * 10 + i;
+
+        button.className =
+            "levelBtn";
+
+        if (
+            global > unlockedLevel
+        ) {
+
+            button.classList.add(
+                "locked"
+            );
+
+            button.textContent =
+                "🔒 مرحله " + i;
+
+        } else {
+
+            button.textContent =
+                "🎮 مرحله " + i;
+
+            button.addEventListener(
+                "click",
+                () => startLevel(i)
+            );
+        }
+
+        grid.appendChild(button);
     }
 }
 
 // ======================================================
-// برخورد
+// تب دنیاها
 // ======================================================
 
-function collision(a, b) {
+document
+    .querySelectorAll(".tab")
+    .forEach(tab => {
 
-    return (
+        tab.addEventListener(
+            "click",
+            () => {
 
-        a.x < b.x + b.w &&
-        a.x + a.w > b.x &&
-        a.y < b.y + b.h &&
-        a.y + a.h > b.y
+                world =
+                    Number(
+                        tab.dataset.world
+                    );
+
+                buildLevelMap();
+            }
+        );
+    });
+
+// ======================================================
+// دکمه‌ها
+// ======================================================
+
+const startBtn =
+    document.getElementById(
+        "startBtn"
+    );
+
+if (startBtn) {
+
+    startBtn.addEventListener(
+        "click",
+        () => startLevel(1)
     );
 }
 
-// ======================================================
-// فاصله
-// ======================================================
+const levelsBtn =
+    document.getElementById(
+        "levelsBtn"
+    );
 
-function distance(
-    x1,
-    y1,
-    x2,
-    y2
-) {
+if (levelsBtn) {
 
-    return Math.sqrt(
-        (x1 - x2) ** 2 +
-        (y1 - y2) ** 2
+    levelsBtn.addEventListener(
+        "click",
+        () => {
+
+            buildLevelMap();
+
+            showScreen("levels");
+        }
+    );
+}
+
+const charactersBtn =
+    document.getElementById(
+        "charactersBtn"
+    );
+
+if (charactersBtn) {
+
+    charactersBtn.addEventListener(
+        "click",
+        () => showScreen(
+            "characters"
+        )
+    );
+}
+
+const levelsBackBtn =
+    document.getElementById(
+        "levelsBackBtn"
+    );
+
+if (levelsBackBtn) {
+
+    levelsBackBtn.addEventListener(
+        "click",
+        showMenu
+    );
+}
+
+const charactersBackBtn =
+    document.getElementById(
+        "charactersBackBtn"
+    );
+
+if (charactersBackBtn) {
+
+    charactersBackBtn.addEventListener(
+        "click",
+        showMenu
+    );
+}
+
+const nextLevelBtn =
+    document.getElementById(
+        "nextLevelBtn"
+    );
+
+if (nextLevelBtn) {
+
+    nextLevelBtn.addEventListener(
+        "click",
+        nextLevel
+    );
+}
+
+const finishLevelsBtn =
+    document.getElementById(
+        "finishLevelsBtn"
+    );
+
+if (finishLevelsBtn) {
+
+    finishLevelsBtn.addEventListener(
+        "click",
+        () => {
+
+            buildLevelMap();
+
+            showScreen("levels");
+        }
+    );
+}
+
+const retryBtn =
+    document.getElementById(
+        "retryBtn"
+    );
+
+if (retryBtn) {
+
+    retryBtn.addEventListener(
+        "click",
+        () => {
+
+            health = 3;
+            shield = 0;
+            ammo = 7;
+
+            createLevel();
+
+            gameRunning = true;
+
+            updateHUD();
+        }
+    );
+}
+
+const gameoverLevelsBtn =
+    document.getElementById(
+        "gameoverLevelsBtn"
+    );
+
+if (gameoverLevelsBtn) {
+
+    gameoverLevelsBtn.addEventListener(
+        "click",
+        () => {
+
+            buildLevelMap();
+
+            showScreen("levels");
+        }
+    );
+}
+
+const gameoverMenuBtn =
+    document.getElementById(
+        "gameoverMenuBtn"
+    );
+
+if (gameoverMenuBtn) {
+
+    gameoverMenuBtn.addEventListener(
+        "click",
+        showMenu
+    );
+}
+
+const storyMenuBtn =
+    document.getElementById(
+        "storyMenuBtn"
+    );
+
+if (storyMenuBtn) {
+
+    storyMenuBtn.addEventListener(
+        "click",
+        showMenu
     );
 }
 
@@ -2565,37 +2438,76 @@ function distance(
 // حلقه بازی
 // ======================================================
 
-function loop() {
+function gameLoop() {
 
-    if (endingScene) {
+    if (gameRunning) {
 
-        drawEnding();
+        updatePlayer();
 
-        return;
+        updateEnemies();
+
+        updateBoss();
+
+        updateItems();
+
+        updateBullets();
+
+        updateCamera();
+
+        // رسیدن به پرچم
+        if (
+
+            player.x + player.w >
+                flag.x &&
+            player.x <
+                flag.x + flag.w &&
+            Math.abs(
+                player.y -
+                flag.y
+            ) < 180
+
+        ) {
+
+            if (
+                level === 10 &&
+                boss &&
+                boss.alive
+            ) {
+
+                showMessage(
+                    "👹 اول هیولا را شکست بده!"
+                );
+
+            } else {
+
+                finishLevel();
+            }
+        }
     }
-
-    if (!gameRunning) {
-
-        draw();
-
-        return;
-    }
-
-    update();
 
     draw();
 
-    requestAnimationFrame(loop);
+    requestAnimationFrame(
+        gameLoop
+    );
 }
 
 // ======================================================
 // شروع اولیه
 // ======================================================
 
-loadLevel();
+health = 3;
+shield = 0;
+ammo = 7;
 
-updateUI();
+buildLevelMap();
 
-draw();
+createLevel();
+
+updateHUD();
+
+showMenu();
+
+gameLoop();
 
   
