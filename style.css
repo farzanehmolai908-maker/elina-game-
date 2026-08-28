@@ -1,214 +1,829 @@
+/* =========================
+   تنظیمات اصلی
+========================= */
+
 * {
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+html,
+body {
     margin: 0;
     padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    background: #101522;
 }
 
 body {
-    font-family: Arial, sans-serif;
-    background: linear-gradient(#8ed6ff, #dff7ff);
-    min-height: 100vh;
-    padding: 15px;
+    color: white;
 }
 
-.game-container {
-    width: 100%;
-    max-width: 1000px;
-    margin: auto;
+/* =========================
+   Canvas بازی
+========================= */
+
+#game {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    display: block;
+    background: #6ec6ff;
+}
+
+/* =========================
+   صفحات منو
+========================= */
+
+.screen {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(20, 35, 65, .96),
+            rgba(62, 35, 85, .96)
+        );
+
+    overflow-y: auto;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* =========================
+   عنوان
+========================= */
+
+.screen h1 {
+    margin: 0 0 12px;
+
+    font-size: clamp(35px, 8vw, 72px);
+
+    text-align: center;
+
+    text-shadow:
+        0 5px 0 #111,
+        0 8px 18px rgba(0, 0, 0, .5);
+}
+
+.screen h2 {
+    font-size: clamp(28px, 6vw, 48px);
+    margin: 8px 0 20px;
+
     text-align: center;
 }
 
-.game-header {
-    margin-bottom: 12px;
-}
+.screen p {
+    max-width: 650px;
 
-.game-header h1 {
-    font-size: 30px;
-    margin-bottom: 5px;
-}
+    line-height: 1.8;
 
-.game-header p {
+    text-align: center;
+
     font-size: 17px;
-    font-weight: bold;
 }
 
-.game-info {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 8px;
-}
+/* =========================
+   دکمه‌های منو
+========================= */
 
-.info-box {
-    background: rgba(255,255,255,0.9);
-    padding: 8px 13px;
-    border-radius: 12px;
-    font-weight: bold;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-}
+button {
+    border: none;
+    outline: none;
 
-.level-info {
-    display: flex;
-    justify-content: space-between;
-    background: rgba(0,0,0,0.65);
-    color: white;
-    padding: 9px 15px;
-    border-radius: 12px 12px 0 0;
-    font-weight: bold;
-}
-
-#gameArea {
-    position: relative;
-    width: 100%;
-    overflow: hidden;
-    border-radius: 0 0 16px 16px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-    background: #70c5ce;
-}
-
-#gameCanvas {
-    display: block;
-    width: 100%;
-    height: auto;
-    min-height: 350px;
-    background: #70c5ce;
-}
-
-.mobile-controls {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    padding: 0 15px;
-    direction: ltr;
-    pointer-events: none;
-}
-
-.movement-buttons,
-.action-buttons {
-    display: flex;
-    gap: 10px;
-    pointer-events: auto;
-}
-
-.game-button {
-    width: 65px;
-    height: 65px;
-    border: 3px solid rgba(255,255,255,0.9);
-    border-radius: 18px;
-    background: rgba(30,30,30,0.65);
-    color: white;
-    font-size: 27px;
-    font-weight: bold;
-    box-shadow: 0 5px 12px rgba(0,0,0,0.35);
     cursor: pointer;
-    user-select: none;
-    touch-action: manipulation;
-}
 
-.game-button:active {
-    transform: scale(0.88);
-    background: rgba(0,0,0,0.85);
-}
+    font-family: inherit;
 
-.game-message {
-    position: absolute;
-    top: 15px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0,0,0,0.65);
     color: white;
-    padding: 8px 15px;
-    border-radius: 12px;
+
     font-weight: bold;
+
+    transition:
+        transform .12s ease,
+        filter .12s ease;
+}
+
+button:active {
+    transform: scale(.92);
+}
+
+button:hover {
+    filter: brightness(1.12);
+}
+
+/* =========================
+   دکمه اصلی
+========================= */
+
+.screen > button,
+#finish button,
+#gameover button,
+#treasure button {
+
+    min-width: 210px;
+
+    margin: 7px;
+
+    padding: 14px 24px;
+
+    border-radius: 18px;
+
+    font-size: 18px;
+
+    background:
+        linear-gradient(
+            #ff6b91,
+            #d93465
+        );
+
+    box-shadow:
+        0 5px 0 #8d2446,
+        0 10px 20px rgba(0,0,0,.3);
+}
+
+.screen > button:active {
+    transform:
+        translateY(4px)
+        scale(.97);
+
+    box-shadow:
+        0 1px 0 #8d2446;
+}
+
+/* =========================
+   HUD بازی
+========================= */
+
+#hud {
+
+    position: fixed;
+
+    top: 12px;
+    left: 12px;
+    right: 12px;
+
+    z-index: 10;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 8px;
+
     pointer-events: none;
+}
+
+.hudBox {
+
+    padding: 9px 13px;
+
+    border-radius: 15px;
+
+    background:
+        rgba(10, 15, 25, .72);
+
+    border:
+        2px solid rgba(255,255,255,.22);
+
+    box-shadow:
+        0 5px 15px rgba(0,0,0,.25);
+
+    font-size: 16px;
+
+    font-weight: bold;
+
+    backdrop-filter: blur(7px);
+}
+
+/* اگر HUD با spanها ساخته شده باشد */
+
+#hud span {
+    font-weight: bold;
+}
+
+/* =========================
+   پیام بازی
+========================= */
+
+#message {
+
+    position: fixed;
+
+    left: 50%;
+    top: 80px;
+
+    transform: translateX(-50%);
+
+    z-index: 30;
+
+    padding: 10px 20px;
+
+    border-radius: 15px;
+
+    background:
+        rgba(0,0,0,.72);
+
+    font-size: 17px;
+
+    font-weight: bold;
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    transition:
+        opacity .25s ease;
+
     white-space: nowrap;
 }
 
-.start-button {
-    margin-top: 15px;
-    padding: 13px 35px;
-    border: none;
-    border-radius: 15px;
-    background: #ffca28;
-    color: #3d2b00;
-    font-size: 20px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 5px 12px rgba(0,0,0,0.2);
+/* =========================
+   کنترل‌های موبایل
+========================= */
+
+#controls {
+
+    position: fixed;
+
+    left: 0;
+    right: 0;
+    bottom: 18px;
+
+    z-index: 15;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: flex-end;
+
+    padding:
+        0 18px;
+
+    pointer-events: none;
 }
 
-.start-button:active {
-    transform: scale(0.95);
+/* گروه چپ */
+
+#movementControls {
+
+    display: flex;
+
+    gap: 9px;
+
+    pointer-events: auto;
 }
 
-.instructions {
-    margin-top: 18px;
+/* گروه راست */
+
+#actionControls {
+
+    display: flex;
+
+    gap: 9px;
+
+    pointer-events: auto;
+}
+
+/* دکمه‌های بازی */
+
+.gameButton {
+
+    width: 68px;
+    height: 68px;
+
+    border-radius: 22px;
+
+    border:
+        3px solid rgba(255,255,255,.4);
+
+    background:
+        rgba(20,25,35,.75);
+
+    box-shadow:
+        0 6px 0 rgba(0,0,0,.35),
+        0 8px 20px rgba(0,0,0,.25);
+
+    font-size: 28px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    touch-action: none;
+}
+
+.gameButton:active {
+    transform:
+        translateY(5px)
+        scale(.94);
+
+    box-shadow:
+        0 2px 0 rgba(0,0,0,.35);
+}
+
+/* دکمه تیر */
+
+#shoot {
+
+    background:
+        linear-gradient(
+            #ffb52e,
+            #e57900
+        );
+}
+
+/* دکمه پرش */
+
+#jump {
+
+    background:
+        linear-gradient(
+            #5bd5ff,
+            #237bd3
+        );
+}
+
+/* =========================
+   نقشه مراحل
+========================= */
+
+#levels {
+    justify-content: flex-start;
+
+    padding-top: 30px;
+}
+
+#worldTabs {
+
+    width: min(900px, 100%);
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    justify-content: center;
+
+    gap: 9px;
+
+    margin-bottom: 20px;
+}
+
+.tab {
+
+    padding: 11px 17px;
+
+    border-radius: 14px;
+
+    background:
+        rgba(255,255,255,.14);
+
+    border:
+        2px solid rgba(255,255,255,.2);
+
+    font-size: 15px;
+}
+
+.tab:active {
+    background:
+        rgba(255,255,255,.3);
+}
+
+/* شبکه مراحل */
+
+#levelGrid {
+
+    width: min(900px, 100%);
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(90px, 1fr)
+        );
+
+    gap: 12px;
+
+    padding: 10px;
+
+    max-height: 65vh;
+
+    overflow-y: auto;
+}
+
+/* دکمه مرحله */
+
+.levelBtn {
+
+    min-height: 80px;
+
+    border-radius: 18px;
+
+    font-size: 16px;
+
+    background:
+        linear-gradient(
+            #4edc88,
+            #239d59
+        );
+
+    box-shadow:
+        0 5px 0 #17683d;
+}
+
+.levelBtn.locked {
+
+    background:
+        linear-gradient(
+            #69717d,
+            #3e444c
+        );
+
+    box-shadow:
+        0 5px 0 #282c31;
+
+    opacity: .7;
+
+    cursor: not-allowed;
+}
+
+/* =========================
+   شخصیت‌ها
+========================= */
+
+#characters {
+    justify-content: flex-start;
+
+    padding-top: 35px;
+}
+
+#characterGrid {
+
+    width: min(900px, 100%);
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(150px, 1fr)
+        );
+
+    gap: 16px;
+
+    padding: 10px;
+
+    max-height: 70vh;
+
+    overflow-y: auto;
+}
+
+.charCard {
+
+    min-height: 220px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 8px;
+
     padding: 18px;
-    background: rgba(255,255,255,0.9);
+
+    border-radius: 24px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.18),
+            rgba(255,255,255,.06)
+        );
+
+    border:
+        2px solid rgba(255,255,255,.2);
+
+    box-shadow:
+        0 12px 25px rgba(0,0,0,.25);
+}
+
+.charIcon {
+
+    font-size: 75px;
+
+    height: 90px;
+
+    display: flex;
+
+    align-items: center;
+}
+
+.charCard b {
+    font-size: 19px;
+}
+
+.charCard small {
+    opacity: .8;
+}
+
+.charCard button {
+
+    margin-top: 7px;
+
+    padding: 9px 18px;
+
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            #6c9cff,
+            #4169c5
+        );
+
+    box-shadow:
+        0 4px 0 #29458a;
+}
+
+/* =========================
+   صفحه پایان
+========================= */
+
+#finish {
+
+    text-align: center;
+}
+
+#finishStats {
+
+    margin: 12px 0 18px;
+
+    padding: 12px 20px;
+
     border-radius: 15px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+
+    background:
+        rgba(255,255,255,.12);
+
+    font-size: 18px;
 }
 
-.instructions h2 {
-    margin-bottom: 10px;
+/* =========================
+   صفحه گنج
+========================= */
+
+#treasure {
+
+    background:
+        radial-gradient(
+            circle at center,
+            #6e4a18,
+            #22160b 75%
+        );
 }
 
-.instructions p {
-    margin: 6px 0;
-    line-height: 1.7;
+#treasure h2 {
+    color: #ffd45a;
+
+    text-shadow:
+        0 4px 0 #714800;
 }
 
-@media (max-width: 600px) {
+/* =========================
+   صفحه باخت
+========================= */
 
-    body {
-        padding: 5px;
+#gameover {
+
+    background:
+        radial-gradient(
+            circle,
+            #5a2025,
+            #160d10 80%
+        );
+}
+
+#gameover h2 {
+    color: #ff7a7a;
+}
+
+/* =========================
+   اسکرول زیبا
+========================= */
+
+::-webkit-scrollbar {
+    width: 7px;
+}
+
+::-webkit-scrollbar-track {
+    background:
+        rgba(255,255,255,.05);
+}
+
+::-webkit-scrollbar-thumb {
+
+    border-radius: 20px;
+
+    background:
+        rgba(255,255,255,.35);
+}
+
+/* =========================
+   موبایل
+========================= */
+
+@media (max-width: 700px) {
+
+    .screen {
+        padding: 14px;
     }
 
-    .game-header h1 {
-        font-size: 23px;
+    .screen h1 {
+        font-size: 40px;
     }
 
-    .game-header p {
+    .screen h2 {
+        font-size: 28px;
+    }
+
+    .screen p {
         font-size: 14px;
     }
 
-    .info-box {
-        padding: 6px 8px;
+    #hud {
+        top: 7px;
+        left: 7px;
+        right: 7px;
+
+        gap: 5px;
+    }
+
+    .hudBox {
+        padding: 7px 9px;
         font-size: 13px;
     }
 
-    .level-info {
-        font-size: 13px;
+    #controls {
+        bottom: 12px;
+        padding: 0 10px;
     }
 
-    #gameCanvas {
-        min-height: 300px;
+    .gameButton {
+        width: 61px;
+        height: 61px;
+
+        border-radius: 19px;
+
+        font-size: 25px;
     }
 
-    .mobile-controls {
-        bottom: 10px;
-        padding: 0 8px;
-    }
-
-    .movement-buttons,
-    .action-buttons {
+    #movementControls,
+    #actionControls {
         gap: 6px;
     }
 
-    .game-button {
-        width: 58px;
-        height: 58px;
-        font-size: 23px;
+    #levelGrid {
+        grid-template-columns:
+            repeat(4, 1fr);
+
+        gap: 8px;
     }
 
-    .game-message {
-        font-size: 12px;
-        max-width: 85%;
-        overflow: hidden;
+    .levelBtn {
+        min-height: 65px;
+
+        border-radius: 14px;
+
+        font-size: 13px;
+    }
+
+    #characterGrid {
+        grid-template-columns:
+            repeat(2, 1fr);
+
+        gap: 10px;
+    }
+
+    .charCard {
+        min-height: 190px;
+
+        padding: 12px;
+    }
+
+    .charIcon {
+        font-size: 58px;
+        height: 70px;
     }
 }
+
+/* =========================
+   موبایل خیلی کوچک
+========================= */
+
+@media (max-width: 400px) {
+
+    .gameButton {
+        width: 54px;
+        height: 54px;
+
+        font-size: 22px;
+    }
+
+    #hud {
+        transform:
+            scale(.9);
+
+        transform-origin:
+            top left;
+
+        width: 111%;
+    }
+
+    #levelGrid {
+        grid-template-columns:
+            repeat(3, 1fr);
+    }
+}
+
+/* =========================
+   صفحه افقی موبایل
+========================= */
+
+@media (orientation: landscape) and (max-height: 550px) {
+
+    #controls {
+        bottom: 8px;
+    }
+
+    .gameButton {
+        width: 55px;
+        height: 55px;
+    }
+
+    #hud {
+        top: 6px;
+    }
+
+    .screen {
+        justify-content: flex-start;
+
+        padding-top: 15px;
+    }
+}
+
+/* =========================
+   افکت لمس
+========================= */
+
+.gameButton,
+.screen button,
+.levelBtn,
+.tab,
+.charCard button {
+
+    touch-action: manipulation;
+}
+
+/* =========================
+   جلوگیری از انتخاب متن
+========================= */
+
+canvas {
+    touch-action: none;
+}
+
+/* =========================
+   حالت فوکوس
+========================= */
+
+button:focus-visible {
+    outline:
+        3px solid white;
+
+    outline-offset:
+        3px;
+    }
