@@ -1,181 +1,163 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>ماجراجویی الینا | نجات پدر</title>
-
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ماجراجویی الینا</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <main class="game-container">
+<main id="gameWrap">
 
-        <!-- عنوان -->
-        <header class="game-header">
-            <h1>🌟 ماجراجویی الینا</h1>
-            <p>ماموریت: نجات پدر 🚩</p>
-        </header>
+  <canvas id="game"></canvas>
 
+  <!-- اطلاعات بازی -->
+  <div id="hud">
+    <div class="hudBox">❤️ <span id="lives">3</span></div>
+    <div class="hudBox">🪙 <span id="coins">0</span></div>
+    <div class="hudBox">💎 <span id="gems">0</span></div>
+    <div class="hudBox">🔫 <span id="ammo">7</span></div>
+    <div class="hudBox">🌍 <span id="stage">1-1</span></div>
+  </div>
 
-        <!-- اطلاعات بازی -->
-        <section class="game-info">
+  <div id="message"></div>
 
-            <div class="info-box">
-                ❤️ جان:
-                <span id="lives">5</span>
-            </div>
+  <!-- منوی اصلی -->
+  <section id="menu" class="screen">
 
-            <div class="info-box">
-                🪙 سکه:
-                <span id="coins">0</span>
-            </div>
+    <h1>🌟 ماجراجویی الینا 🌟</h1>
 
-            <div class="info-box">
-                🔫 تیر:
-                <span id="ammo">30</span>
-            </div>
+    <p>
+      برای نجات پدر، ۴ دنیا و ۴۰ مرحله را پشت سر بگذار!
+    </p>
 
-            <div class="info-box">
-                🛡️ محافظ:
-                <span id="shield">3</span>
-            </div>
+    <button id="startBtn">
+      شروع بازی
+    </button>
 
-            <div class="info-box">
-                ⭐ امتیاز:
-                <span id="score">0</span>
-            </div>
+    <button id="levelsBtn">
+      🗺️ انتخاب مرحله
+    </button>
 
-        </section>
+    <button id="charsBtn">
+      👧 شخصیت‌ها 💎
+    </button>
 
+  </section>
 
-        <!-- اطلاعات مرحله -->
-        <div class="level-info">
+  <!-- نقشه مراحل -->
+  <section id="levels" class="screen hidden">
 
-            <span id="worldName">
-                🌲 جنگل
-            </span>
+    <h2>🗺️ نقشه مراحل</h2>
 
-            <span>
-                مرحله
-                <b id="levelNumber">1</b>
-                از 10
-            </span>
+    <div id="worldTabs"></div>
 
-        </div>
+    <div id="levelGrid"></div>
 
+    <button class="backBtn">
+      بازگشت
+    </button>
 
-        <!-- خود بازی -->
-        <div id="gameArea">
+  </section>
 
-            <canvas
-                id="gameCanvas"
-                width="900"
-                height="500">
-            </canvas>
+  <!-- شخصیت‌ها -->
+  <section id="characters" class="screen hidden">
 
+    <h2>👧 شخصیت‌ها</h2>
 
-            <!-- کنترل‌های داخل بازی -->
+    <p>
+      هر ۶۰ سکه = ۱ 💎 الماس
+    </p>
 
-            <div class="mobile-controls">
+    <div id="characterGrid"></div>
 
-                <div class="movement-buttons">
+    <button class="backBtn">
+      بازگشت
+    </button>
 
-                    <button
-                        id="leftBtn"
-                        class="game-button">
-                        ⬅️
-                    </button>
+  </section>
 
-                    <button
-                        id="rightBtn"
-                        class="game-button">
-                        ➡️
-                    </button>
+  <!-- پایان مرحله -->
+  <section id="finish" class="screen hidden">
 
-                </div>
+    <h2>🏆 مرحله کامل شد!</h2>
 
+    <div class="stars">
+      ★ ★ ★
+    </div>
 
-                <div class="action-buttons">
+    <p id="finishStats"></p>
 
-                    <button
-                        id="shootBtn"
-                        class="game-button shoot">
-                        🔫
-                    </button>
+    <button id="nextBtn">
+      مرحله بعد ➜
+    </button>
 
-                    <button
-                        id="jumpBtn"
-                        class="game-button jump">
-                        ⬆️
-                    </button>
+    <button id="mapBtn">
+      🗺️ نقشه مراحل
+    </button>
 
-                </div>
+  </section>
 
-            </div>
+  <!-- مرحله گنج -->
+  <section id="treasure" class="screen hidden">
 
+    <h2>💰 مرحله گنج!</h2>
 
-            <!-- پیام‌های بازی -->
+    <p>
+      همه گنج‌ها را جمع کن!
+    </p>
 
-            <div
-                id="message"
-                class="game-message">
-                برای شروع بازی آماده‌ای؟ 🎮
-            </div>
+    <button id="treasureBtn">
+      شروع مرحله گنج
+    </button>
 
-        </div>
+  </section>
 
+  <!-- باخت -->
+  <section id="gameover" class="screen hidden">
 
-        <!-- دکمه شروع -->
+    <h2>🔥 بازی تمام شد!</h2>
 
-        <button
-            id="startBtn"
-            class="start-button">
-            🎮 شروع بازی
-        </button>
+    <p>
+      نگران نباش؛ دوباره امتحان کن.
+    </p>
 
+    <button id="retryBtn">
+      🔄 تلاش دوباره
+    </button>
 
-        <!-- راهنما -->
+    <button id="gameMapBtn">
+      🗺️ نقشه مراحل
+    </button>
 
-        <section class="instructions">
+  </section>
 
-            <h2>🎮 راهنمای بازی</h2>
+  <!-- دکمه‌های داخل صفحه -->
+  <div id="controls">
 
-            <p>
-                ⬅️ حرکت به چپ
-                &nbsp;&nbsp;
-                ➡️ حرکت به راست
-            </p>
+    <button id="left">
+      ◀
+    </button>
 
-            <p>
-                ⬆️ پرش
-                &nbsp;&nbsp;
-                🔫 تیراندازی
-            </p>
+    <button id="right">
+      ▶
+    </button>
 
-            <p>
-                🪙 سکه جمع کن
-                •
-                🔫 تیر پیدا کن
-                •
-                ❤️ جان بگیر
-            </p>
+    <button id="shoot">
+      🔫
+    </button>
 
-            <p>
-                🚩 خودت را به پرچم برسان
-                تا مرحله بعد باز شود.
-            </p>
+    <button id="jump">
+      ▲
+    </button>
 
-        </section>
+  </div>
 
-    </main>
+</main>
 
-
-    <!-- فایل اصلی بازی -->
-
-    <script src="game.js"></script>
+<script src="game.js"></script>
 
 </body>
 </html>
