@@ -3,44 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ماجراجویی الینا 🎮</title>
+
+    <title>ماجراجویی الینا | نجات پدر</title>
+
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <div class="game-wrapper">
+    <main class="game-container">
 
-        <h1>🌟 ماجراجویی الینا</h1>
+        <!-- عنوان -->
+        <header class="game-header">
+            <h1>🌟 ماجراجویی الینا</h1>
+            <p>ماموریت: نجات پدر 🚩</p>
+        </header>
 
-        <div class="info">
-            <span>⭐ امتیاز: <b id="score">0</b></span>
-            <span>🪙 سکه: <b id="coins">0</b></span>
-            <span>🔫 تیر: <b id="ammo">20</b></span>
-            <span>🛡️ سپر: <b id="shield">3</b></span>
-            <span>❤️ جان: <b id="lives">5</b></span>
+
+        <!-- اطلاعات بازی -->
+        <section class="game-info">
+
+            <div class="info-box">
+                ❤️ جان:
+                <span id="lives">5</span>
+            </div>
+
+            <div class="info-box">
+                🪙 سکه:
+                <span id="coins">0</span>
+            </div>
+
+            <div class="info-box">
+                🔫 تیر:
+                <span id="ammo">30</span>
+            </div>
+
+            <div class="info-box">
+                🛡️ محافظ:
+                <span id="shield">3</span>
+            </div>
+
+            <div class="info-box">
+                ⭐ امتیاز:
+                <span id="score">0</span>
+            </div>
+
+        </section>
+
+
+        <!-- اطلاعات مرحله -->
+        <div class="level-info">
+
+            <span id="worldName">
+                🌲 جنگل
+            </span>
+
+            <span>
+                مرحله
+                <b id="levelNumber">1</b>
+                از 10
+            </span>
+
         </div>
 
-        <canvas id="gameCanvas"></canvas>
 
-        <div class="message" id="message">
-            برای شروع بازی روی دکمه بزن!
+        <!-- خود بازی -->
+        <div id="gameArea">
+
+            <canvas
+                id="gameCanvas"
+                width="900"
+                height="500">
+            </canvas>
+
+
+            <!-- کنترل‌های داخل بازی -->
+
+            <div class="mobile-controls">
+
+                <div class="movement-buttons">
+
+                    <button
+                        id="leftBtn"
+                        class="game-button">
+                        ⬅️
+                    </button>
+
+                    <button
+                        id="rightBtn"
+                        class="game-button">
+                        ➡️
+                    </button>
+
+                </div>
+
+
+                <div class="action-buttons">
+
+                    <button
+                        id="shootBtn"
+                        class="game-button shoot">
+                        🔫
+                    </button>
+
+                    <button
+                        id="jumpBtn"
+                        class="game-button jump">
+                        ⬆️
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- پیام‌های بازی -->
+
+            <div
+                id="message"
+                class="game-message">
+                برای شروع بازی آماده‌ای؟ 🎮
+            </div>
+
         </div>
 
-        <button id="startBtn">🎮 شروع بازی</button>
 
-        <div class="controls">
-            <button id="leftBtn">⬅️</button>
-            <button id="rightBtn">➡️</button>
-            <button id="shootBtn">🔫 تیر</button>
-            <button id="jumpBtn">⬆️ پرش</button>
-        </div>
+        <!-- دکمه شروع -->
 
-        <p class="help">
-            کامپیوتر: ← → حرکت | Space پرش | Z تیر
-        </p>
+        <button
+            id="startBtn"
+            class="start-button">
+            🎮 شروع بازی
+        </button>
 
-    </div>
+
+        <!-- راهنما -->
+
+        <section class="instructions">
+
+            <h2>🎮 راهنمای بازی</h2>
+
+            <p>
+                ⬅️ حرکت به چپ
+                &nbsp;&nbsp;
+                ➡️ حرکت به راست
+            </p>
+
+            <p>
+                ⬆️ پرش
+                &nbsp;&nbsp;
+                🔫 تیراندازی
+            </p>
+
+            <p>
+                🪙 سکه جمع کن
+                •
+                🔫 تیر پیدا کن
+                •
+                ❤️ جان بگیر
+            </p>
+
+            <p>
+                🚩 خودت را به پرچم برسان
+                تا مرحله بعد باز شود.
+            </p>
+
+        </section>
+
+    </main>
+
+
+    <!-- فایل اصلی بازی -->
 
     <script src="game.js"></script>
 
