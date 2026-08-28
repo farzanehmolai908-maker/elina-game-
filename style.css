@@ -1,214 +1,100 @@
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
+/* کنترل‌های داخل صفحه بازی */
 
-body {
-    font-family: Arial, sans-serif;
-    background: linear-gradient(#8ed6ff, #dff7ff);
-    min-height: 100vh;
-    padding: 15px;
-}
-
-.game-container {
-    width: 100%;
-    max-width: 1000px;
-    margin: auto;
-    text-align: center;
-}
-
-.game-header {
-    margin-bottom: 12px;
-}
-
-.game-header h1 {
-    font-size: 30px;
-    margin-bottom: 5px;
-}
-
-.game-header p {
-    font-size: 17px;
-    font-weight: bold;
-}
-
-.game-info {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 8px;
-}
-
-.info-box {
-    background: rgba(255,255,255,0.9);
-    padding: 8px 13px;
-    border-radius: 12px;
-    font-weight: bold;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-}
-
-.level-info {
-    display: flex;
-    justify-content: space-between;
-    background: rgba(0,0,0,0.65);
-    color: white;
-    padding: 9px 15px;
-    border-radius: 12px 12px 0 0;
-    font-weight: bold;
-}
-
-#gameArea {
-    position: relative;
-    width: 100%;
-    overflow: hidden;
-    border-radius: 0 0 16px 16px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-    background: #70c5ce;
-}
-
-#gameCanvas {
-    display: block;
-    width: 100%;
-    height: auto;
-    min-height: 350px;
-    background: #70c5ce;
-}
-
-.mobile-controls {
-    position: absolute;
+#controls {
+    position: fixed;
     left: 0;
     right: 0;
     bottom: 15px;
+
+    z-index: 100;
+
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
-    padding: 0 15px;
-    direction: ltr;
+    align-items: center;
+
+    padding: 0 18px;
+
     pointer-events: none;
 }
 
-.movement-buttons,
-.action-buttons {
+/* چپ و راست کنار هم */
+
+#movementControls {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     pointer-events: auto;
 }
 
-.game-button {
+/* تیر و پرش */
+
+#actionControls {
+    display: flex;
+    gap: 8px;
+    pointer-events: auto;
+}
+
+.gameButton {
     width: 65px;
     height: 65px;
-    border: 3px solid rgba(255,255,255,0.9);
-    border-radius: 18px;
-    background: rgba(30,30,30,0.65);
+
+    border: 3px solid rgba(255,255,255,.65);
+    border-radius: 20px;
+
+    background: rgba(20,20,30,.72);
+
     color: white;
+
     font-size: 27px;
     font-weight: bold;
-    box-shadow: 0 5px 12px rgba(0,0,0,0.35);
-    cursor: pointer;
-    user-select: none;
-    touch-action: manipulation;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-shadow:
+        0 5px 0 rgba(0,0,0,.35),
+        0 5px 15px rgba(0,0,0,.3);
+
+    touch-action: none;
 }
 
-.game-button:active {
-    transform: scale(0.88);
-    background: rgba(0,0,0,0.85);
+.gameButton:active {
+    transform: translateY(4px) scale(.94);
+
+    box-shadow:
+        0 1px 0 rgba(0,0,0,.35);
 }
 
-.game-message {
-    position: absolute;
-    top: 15px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0,0,0,0.65);
-    color: white;
-    padding: 8px 15px;
-    border-radius: 12px;
-    font-weight: bold;
-    pointer-events: none;
-    white-space: nowrap;
+/* دکمه تیر */
+
+#shoot {
+    background: rgba(220,120,20,.82);
 }
 
-.start-button {
-    margin-top: 15px;
-    padding: 13px 35px;
-    border: none;
-    border-radius: 15px;
-    background: #ffca28;
-    color: #3d2b00;
-    font-size: 20px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 5px 12px rgba(0,0,0,0.2);
+/* دکمه پرش */
+
+#jump {
+    background: rgba(30,130,220,.82);
 }
 
-.start-button:active {
-    transform: scale(0.95);
-}
-
-.instructions {
-    margin-top: 18px;
-    padding: 18px;
-    background: rgba(255,255,255,0.9);
-    border-radius: 15px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-.instructions h2 {
-    margin-bottom: 10px;
-}
-
-.instructions p {
-    margin: 6px 0;
-    line-height: 1.7;
-}
+/* موبایل */
 
 @media (max-width: 600px) {
 
-    body {
-        padding: 5px;
-    }
-
-    .game-header h1 {
-        font-size: 23px;
-    }
-
-    .game-header p {
-        font-size: 14px;
-    }
-
-    .info-box {
-        padding: 6px 8px;
-        font-size: 13px;
-    }
-
-    .level-info {
-        font-size: 13px;
-    }
-
-    #gameCanvas {
-        min-height: 300px;
-    }
-
-    .mobile-controls {
+    #controls {
         bottom: 10px;
-        padding: 0 8px;
+        padding: 0 10px;
     }
 
-    .movement-buttons,
-    .action-buttons {
-        gap: 6px;
-    }
-
-    .game-button {
+    .gameButton {
         width: 58px;
         height: 58px;
-        font-size: 23px;
+        font-size: 24px;
+        border-radius: 18px;
     }
 
-    .game-message {
-        font-size: 12px;
-        max-width: 85%;
-        overflow: hidden;
+    #movementControls,
+    #actionControls {
+        gap: 6px;
     }
 }
