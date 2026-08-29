@@ -1,16 +1,287 @@
-<!-- کنترل‌های داخل بازی -->
-<div id="gameControls">
 
-    <!-- سمت چپ بازی -->
-    <div class="left-controls">
-        <button id="btnLeft" class="game-btn">◀</button>
-        <button id="btnRight" class="game-btn">▶</button>
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قارچ‌خور - ماجراجویی الینا</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- =========================
+         صفحه اصلی
+    ========================== -->
+    <div id="mainMenu" class="screen active">
+
+        <div class="game-logo">
+            🍄
+            <h1>قارچ‌خور</h1>
+            <p>ماجراجویی نجات پدر</p>
+        </div>
+
+        <div class="menu-buttons">
+            <button id="startGameBtn">▶️ شروع بازی</button>
+            <button id="worldSelectBtn">🌍 انتخاب جهان</button>
+            <button id="guideBtn">📖 راهنمای بازی</button>
+        </div>
+
+        <div class="menu-footer">
+            🎮 ۴ جهان • ۴۰ مرحله • ۴ باس
+        </div>
+
     </div>
 
-    <!-- سمت راست بازی -->
-    <div class="right-controls">
-        <button id="btnShoot" class="game-btn">🔫</button>
-        <button id="btnJump" class="game-btn">⬆</button>
+
+    <!-- =========================
+         انتخاب جهان
+    ========================== -->
+    <div id="worldMenu" class="screen">
+
+        <h2>🌍 انتخاب جهان</h2>
+
+        <div class="world-grid">
+
+            <button class="world-card" data-world="1">
+                <span>🌳</span>
+                <strong>جهان جنگل</strong>
+                <small>۱۰ مرحله</small>
+            </button>
+
+            <button class="world-card locked" data-world="2">
+                <span>❄️</span>
+                <strong>جهان برفی</strong>
+                <small>🔒 قفل</small>
+            </button>
+
+            <button class="world-card locked" data-world="3">
+                <span>🌊</span>
+                <strong>جهان آبی</strong>
+                <small>🔒 قفل</small>
+            </button>
+
+            <button class="world-card locked" data-world="4">
+                <span>🔥</span>
+                <strong>جهان آتش</strong>
+                <small>🔒 قفل</small>
+            </button>
+
+        </div>
+
+        <button class="backBtn" data-back="mainMenu">
+            ↩️ بازگشت
+        </button>
+
     </div>
 
-</div>
+
+    <!-- =========================
+         انتخاب مرحله
+    ========================== -->
+    <div id="levelMenu" class="screen">
+
+        <h2 id="levelTitle">🌳 مراحل جهان جنگل</h2>
+
+        <div id="levelGrid" class="level-grid"></div>
+
+        <button class="backBtn" data-back="worldMenu">
+            ↩️ بازگشت
+        </button>
+
+    </div>
+
+
+    <!-- =========================
+         راهنمای بازی
+    ========================== -->
+    <div id="guideMenu" class="screen">
+
+        <h2>📖 راهنمای بازی</h2>
+
+        <div class="guide-box">
+
+            <p>👈 برای حرکت به چپ استفاده کن.</p>
+            <p>👉 برای حرکت به راست استفاده کن.</p>
+            <p>⬆️ برای پریدن استفاده کن.</p>
+            <p>💥 برای شلیک به دشمن‌ها استفاده کن.</p>
+            <p>🪙 سکه‌ها را جمع کن تا امتیازت بیشتر شود.</p>
+            <p>❤️ مراقب جان‌هایت باش.</p>
+            <p>🚩 برای پایان مرحله به پرچم برس.</p>
+            <p>👑 در پایان هر جهان باید باس را شکست بدهی.</p>
+
+        </div>
+
+        <button class="backBtn" data-back="mainMenu">
+            ↩️ بازگشت
+        </button>
+
+    </div>
+
+
+    <!-- =========================
+         صفحه بازی
+    ========================== -->
+    <div id="gameScreen" class="screen">
+
+        <div id="gameHUD">
+
+            <div>
+                ❤️ جان:
+                <span id="lives">3</span>
+            </div>
+
+            <div>
+                🪙 سکه:
+                <span id="coins">0</span>
+            </div>
+
+            <div>
+                ⭐ امتیاز:
+                <span id="score">0</span>
+            </div>
+
+            <div>
+                🌍 جهان:
+                <span id="currentWorld">1</span>
+            </div>
+
+            <div>
+                📍 مرحله:
+                <span id="currentLevel">1</span>
+            </div>
+
+        </div>
+
+
+        <canvas id="gameCanvas"></canvas>
+
+
+        <!-- کنترل‌های موبایل -->
+
+        <div id="mobileControls">
+
+            <div class="movementControls">
+                <button id="leftBtn">◀</button>
+                <button id="rightBtn">▶</button>
+            </div>
+
+            <div class="actionControls">
+                <button id="jumpBtn">⬆</button>
+                <button id="shootBtn">💥</button>
+            </div>
+
+        </div>
+
+
+        <button id="pauseBtn">
+            ⏸️
+        </button>
+
+    </div>
+
+
+    <!-- =========================
+         توقف بازی
+    ========================== -->
+    <div id="pauseMenu" class="screen overlay">
+
+        <h2>⏸️ بازی متوقف شد</h2>
+
+        <button id="resumeBtn">
+            ▶️ ادامه بازی
+        </button>
+
+        <button id="restartBtn">
+            🔄 شروع دوباره
+        </button>
+
+        <button class="backBtn" data-back="mainMenu">
+            🏠 صفحه اصلی
+        </button>
+
+    </div>
+
+
+    <!-- =========================
+         Game Over
+    ========================== -->
+    <div id="gameOverMenu" class="screen overlay">
+
+        <h2>💔 بازی تمام شد</h2>
+
+        <p>
+            امتیاز شما:
+            <strong id="finalScore">0</strong>
+        </p>
+
+        <button id="retryBtn">
+            🔄 دوباره تلاش کن
+        </button>
+
+        <button class="backBtn" data-back="mainMenu">
+            🏠 صفحه اصلی
+        </button>
+
+    </div>
+
+
+    <!-- =========================
+         پیروزی مرحله
+    ========================== -->
+    <div id="levelCompleteMenu" class="screen overlay">
+
+        <h2>🎉 مرحله تمام شد!</h2>
+
+        <p>
+            ⭐ امتیاز:
+            <strong id="completeScore">0</strong>
+        </p>
+
+        <p>
+            🪙 سکه:
+            <strong id="completeCoins">0</strong>
+        </p>
+
+        <button id="nextLevelBtn">
+            ➡️ مرحله بعد
+        </button>
+
+        <button class="backBtn" data-back="levelMenu">
+            📋 انتخاب مرحله
+        </button>
+
+    </div>
+
+
+    <!-- =========================
+         پیروزی جهان
+    ========================== -->
+    <div id="worldCompleteMenu" class="screen overlay">
+
+        <h2>🏆 جهان با موفقیت تمام شد!</h2>
+
+        <p>
+            🌟 آفرین قهرمان!
+        </p>
+
+        <p>
+            جهان بعدی باز شد 🔓
+        </p>
+
+        <button id="nextWorldBtn">
+            🌍 جهان بعدی
+        </button>
+
+        <button class="backBtn" data-back="mainMenu">
+            🏠 صفحه اصلی
+        </button>
+
+    </div>
+
+
+    <script src="game.js"></script>
+
+</body>
+</html>
