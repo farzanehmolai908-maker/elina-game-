@@ -695,3 +695,184 @@ button:active {
         padding: 10px 15px;
     }
 }
+/* =========================================
+   🎮 کنترل‌های بازی - سبک قارچ‌خور
+========================================= */
+
+#gameControls {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 15px;
+    height: 180px;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+/* ظاهر مشترک همه دکمه‌ها */
+
+#gameControls button {
+    position: fixed;
+
+    width: 105px;
+    height: 105px;
+
+    border-radius: 50%;
+
+    border: 7px solid rgba(255,255,255,0.55);
+
+    background:
+        radial-gradient(
+            circle at 35% 25%,
+            #ff7777 0%,
+            #e62d35 35%,
+            #b50816 75%,
+            #85000b 100%
+        );
+
+    box-shadow:
+        0 8px 0 #72000a,
+        inset 0 5px 8px rgba(255,255,255,0.45),
+        inset 0 -8px 12px rgba(0,0,0,0.25);
+
+    color: white;
+
+    font-size: 48px;
+    font-weight: bold;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    pointer-events: auto;
+
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+
+    touch-action: none;
+
+    transition: transform 0.08s;
+}
+
+/* =========================================
+   ⬅️➡️ حرکت - سمت چپ
+========================================= */
+
+#leftBtn {
+    left: 55px;
+    bottom: 25px;
+}
+
+#rightBtn {
+    left: 175px;
+    bottom: 25px;
+}
+
+
+/* =========================================
+   ⬆️ پرش - پایین سمت راست
+========================================= */
+
+#jumpBtn {
+    right: 55px;
+    bottom: 25px;
+}
+
+
+/* =========================================
+   🔴 تیر - بالاتر از پرش
+========================================= */
+
+#shootBtn {
+    right: 55px;
+    bottom: 145px;
+}
+
+
+/* =========================================
+   افکت فشردن دکمه
+========================================= */
+
+#gameControls button:active {
+    transform: translateY(6px) scale(0.94);
+
+    box-shadow:
+        0 2px 0 #72000a,
+        inset 0 5px 8px rgba(255,255,255,0.35),
+        inset 0 -5px 10px rgba(0,0,0,0.25);
+}
+
+
+/* =========================================
+   📱 موبایل
+========================================= */
+
+@media (max-width: 600px) {
+
+    #gameControls button {
+        width: 90px;
+        height: 90px;
+
+        font-size: 40px;
+
+        border-width: 6px;
+    }
+
+    #leftBtn {
+        left: 30px;
+        bottom: 25px;
+    }
+
+    #rightBtn {
+        left: 135px;
+        bottom: 25px;
+    }
+
+    #jumpBtn {
+        right: 30px;
+        bottom: 25px;
+    }
+
+    #shootBtn {
+        right: 30px;
+        bottom: 130px;
+    }
+
+}
+
+
+/* =========================================
+   📱 گوشی‌های خیلی کوچک
+========================================= */
+
+@media (max-width: 380px) {
+
+    #gameControls button {
+        width: 78px;
+        height: 78px;
+
+        font-size: 34px;
+    }
+
+    #leftBtn {
+        left: 20px;
+        bottom: 20px;
+    }
+
+    #rightBtn {
+        left: 110px;
+        bottom: 20px;
+    }
+
+    #jumpBtn {
+        right: 20px;
+        bottom: 20px;
+    }
+
+    #shootBtn {
+        right: 20px;
+        bottom: 115px;
+    }
+
+}
